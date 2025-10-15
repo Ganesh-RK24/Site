@@ -75,7 +75,7 @@
     <a onclick="showWelcome()">Dashboard Overview</a>
     <a href="#" id="link-cycle-count">Cycle Count</a>
     <a href="#" id="link-master-reports">Master Reports</a>
-    <a href="#" id="link-audit-reports">Audit Reports</a>
+    <a href="#" id="link-audit-reports">Auditor Reports</a>
     <a href="#" id="link-payments">Payments</a>
     <a id="link-user-settings" onclick="showUserSettings()">User Settings</a>
     <a href="#" id="link-notifications">Notifications</a>
@@ -100,9 +100,9 @@
     const role = loggedInUser.role;
 
     const accessRights = {
-      'Owner': ['User Settings', 'Cycle Count', 'Master Reports', 'Audit Reports', 'Payments', 'Notifications', 'Help'],
-      'Admin': ['User Settings', 'Cycle Count', 'Master Reports', 'Audit Reports', 'Payments', 'Notifications', 'Help'],
-      'Executive': ['Cycle Count', 'Master Reports', 'Audit Reports', 'Payments', 'Notifications', 'Help'],
+      'Owner': ['User Settings', 'Cycle Count', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Admin': ['User Settings', 'Cycle Count', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Executive': ['Cycle Count', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
       'Team Leader': ['Cycle Count', 'Master Reports', 'Notifications', 'Help'],
       'Team Member': ['Cycle Count', 'Notifications', 'Help'],
       'Employee': ['Cycle Count', 'Notifications', 'Help']
@@ -113,7 +113,7 @@
         "User Settings": document.getElementById('link-user-settings'),
         "Cycle Count": document.getElementById('link-cycle-count'),
         "Master Reports": document.getElementById('link-master-reports'),
-        "Audit Reports": document.getElementById('link-audit-reports'),
+        "Auditor Reports": document.getElementById('link-audit-reports'),
         "Payments": document.getElementById('link-payments'),
         "Notifications": document.getElementById('link-notifications'),
         "Help": document.getElementById('link-help')
@@ -161,3 +161,4 @@
 
 </body>
 </html>
+
