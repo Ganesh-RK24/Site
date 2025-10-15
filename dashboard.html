@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f2f5;
+    }
+
+    .side-panel {
+      width: 250px;
+      background-color: #2c3e50;
+      color: #fff;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      position: fixed;
+      height: 100vh;
+    }
+
+    .side-panel h2 {
+      font-size: 22px;
+      margin-bottom: 30px;
+    }
+
+    .side-panel a {
+      color: #fff;
+      text-decoration: none;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+
+    .side-panel a:hover {
+      background-color: #34495e;
+    }
+
+    .side-panel .logout {
+      margin-top: auto;
+      background-color: #e74c3c;
+      text-align: center;
+    }
+
+    .main-panel {
+      margin-left: 250px;
+      padding: 40px;
+      flex-grow: 1;
+      overflow-y: auto;
+      box-sizing: border-box;
+      background-color: #fff;
+    }
+
+    .main-panel h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .restricted {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="side-panel">
+    <h2>Dashboard</h2>
+    <a onclick="showSection('overview')">Dashboard Overview</a>
+    <a id="cycle-count" onclick="showSection('cycle')">Cycle Count</a>
+    <a id="master-reports" onclick="showSection('master')">Master Reports</a>
+    <a id="audit-reports" onclick="showSection('audit')">Audit Reports</a>
+    <a id="payments" onclick="showSection('payments')">Payments</a>
+    <a id="user-settings" onclick="showSection('users')">User Settings</a>
+    <a id="notifications" onclick="showSection('notifications')">Notifications</a>
+    <a id="help" onclick="showSection('help')">Help</a>
+    <a class="logout" onclick="logout()">Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-panel">
+    <h1 id="welcome-msg">Welcome</h1>
+    <div id="content-area">
+      <p>Select a section from the sidebar to begin.</p>
+    </div>
+  </div>
+
+  <script>
+    // 🔐 Get the logged-in user from localStorage
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+
+    if (!loggedInUser) {
+      // If not logged in, redirect to login page
+      window.location.href = 'login.html';
+    }
+
+    // Display welcome message
+    document.getElementById('welcome-msg').textContent = `Welcome, ${loggedInUser.username}`;
+
+    // 🧠 Role-based access logic
+    const role = loggedInUser.role;
+    const roleAccess = {
+      "Owner": ["cycle-count", "master-reports", "audit-reports", "payments", "user-settings", "notifications", "help"],
+      "Admin": ["cycle-count", "master-reports", "audit-reports", "payments", "user-settings", "notifications", "help"],
+      "Executive": ["cycle-count", "master-reports", "audit-reports", "payments", "notifications", "help"],
+      "Team Leader": ["cycle-count", "master-reports", "notifications", "help"],
+      "Team Member": ["cycle-count", "notifications", "help"],
+      "Employee": ["cycle-count", "notifications", "help"]
+    };
+
+    // 🔒 Restrict inaccessible links
+    const allSections = ["cycle-count", "master-reports", "audit-reports", "payments", "user-settings", "notifications", "help"];
+    const allowed = roleAccess[role] || [];
+
+    allSections.forEach(id => {
+      const el = document.getElementById(id);
+      if (!allowed.includes(id) && el) {
+        el.style.display = 'none';
+      }
+    });
+
+    // 📦 Show content section
+    function showSection(section) {
+      const content = {
+        overview: `<p>This is the dashboard overview. You can see key metrics here.</p>`,
+        cycle: `<p>Cycle Count data and actions will be shown here.</p>`,
+        master: `<p>Master Reports section for authorized users.</p>`,
+        audit: `<p>Audit Reports accessible based on role.</p>`,
+        payments: `<p>Payments processing and history.</p>`,
+        users: `<p>User Settings - Add/Edit/Delete Users.</p>`,
+        notifications: `<p>All alerts and system notifications appear here.</p>`,
+        help: `<p>Need help? Access guides and contact support here.</p>`
+      };
+
+      document.getElementById('welcome-msg').textContent = section.charAt(0).toUpperCase() + section.slice(1);
+      document.getElementById('content-area').innerHTML = content[section] || `<p>Content not found.</p>`;
+    }
+
+    // 🚪 Logout function
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'login.html';
+    }
+  </script>
+
+</body>
+</html>
