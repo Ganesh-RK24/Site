@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Auditor Data</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: #121212;
+    color: #eee;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  h2 {
+    color: #4a90e2;
+    margin-bottom: 20px;
+  }
+  .upload-section {
+    background: #1f1f1f;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px #4a90e2;
+    margin-bottom: 30px;
+  }
+  input[type="file"], input[type="date"], select, input[type="number"], button {
+    width: 100%;
+    margin: 10px 0 15px 0;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    background-color: #333;
+    color: #eee;
+    box-sizing: border-box;
+  }
+  input[type="file"]::-webkit-file-upload-button {
+    background: #4a90e2;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  input[type="file"]::-webkit-file-upload-button:hover {
+    background: #357ABD;
+  }
+  button {
+    background-color: #4a90e2;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #357ABD;
+  }
+  .filter-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .filter-row > * {
+    flex: 1 1 150px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #222;
+    color: #eee;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #444;
+    text-align: left;
+  }
+  th {
+    background-color: #4a90e2;
+  }
+  tr:hover {
+    background-color: #333;
+  }
+  .download-button {
+    margin-top: 15px;
+    background-color: #4caf50;
+    border: none;
+    color: white;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .download-button:hover {
+    background-color: #388e3c;
+  }
+  .message {
+    margin-top: 15px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>Auditor Data Upload & Reports</h2>
+
+    <div class="upload-section">
+      <input type="file" id="fileInput" accept=".csv" />
+      <button id="uploadBtn">Upload CSV</button>
+    </div>
+
+    <div class="filter-row">
+      <input type="date" id="filterDate" />
+      <select id="filterWarehouse">
+        <option value="">All Warehouses</option>
+        <option value="W501">W501</option>
+        <option value="W503">W503</option>
+        <option value="W504">W504</option>
+        <option value="W506">W506</option>
+        <option value="W509">W509</option>
+        <option value="W511">W511</option>
+        <option value="W512">W512</option>
+      </select>
+      <button id="filterBtn">Filter</button>
+    </div>
+
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Audit Date</th>
+          <th>Cycle Count</th>
+          <th>Item</th>
+          <th>Warehouse</th>
+          <th>Quantity</th>
+          <th>Comments</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data rows will go here -->
+      </tbody>
+    </table>
+
+    <button class="download-button" id="downloadCsvBtn">Download CSV</button>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    let auditorData = [];
+
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const filterDate = document.getElementById('filterDate');
+    const filterWarehouse = document.getElementById('filterWarehouse');
+    const filterBtn = document.getElementById('filterBtn');
+    const dataTableBody = document.querySelector('#dataTable tbody');
+    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+    const messageDiv = document.getElementById('message');
+
+    // Utility to parse CSV to JSON array (simple version)
+    function csvToJson(csv) {
+      const lines = csv.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const obj = {};
+        headers.forEach((header, idx) => obj[header] = values[idx] || '');
+        return obj;
+      });
+    }
+
+    // Render table rows based on data array
+    function renderTable(data) {
+      dataTableBody.innerHTML = '';
+      if (!data.length) {
+        dataTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ccc;">No data to display</td></tr>';
+        return;
+      }
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row['Audit Date'] || ''}</td>
+          <td>${row['Cycle Count'] || ''}</td>
+          <td>${row['Item'] || ''}</td>
+          <td>${row['Warehouse'] || ''}</td>
+          <td>${row['Quantity'] || ''}</td>
+          <td>${row['Comments'] || ''}</td>
+        `;
+        dataTableBody.appendChild(tr);
+      });
+    }
+
+    // Upload CSV handler
+    uploadBtn.addEventListener('click', () => {
+      messageDiv.textContent = '';
+      if (!fileInput.files.length) {
+        alert('Please select a CSV file to upload.');
+        return;
+      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target.result;
+          const jsonData = csvToJson(text);
+          auditorData = jsonData;
+          renderTable(auditorData);
+          messageDiv.textContent = `Successfully loaded ${auditorData.length} records.`;
+        } catch (err) {
+          messageDiv.textContent = 'Error parsing CSV file.';
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Filter data
+    filterBtn.addEventListener('click', () => {
+      let filtered = auditorData;
+      const dateVal = filterDate.value;
+      const warehouseVal = filterWarehouse.value;
+
+      if (dateVal) {
+        filtered = filtered.filter(row => row['Audit Date'] === dateVal);
+      }
+      if (warehouseVal) {
+        filtered = filtered.filter(row => row['Warehouse'] === warehouseVal);
+      }
+
+      renderTable(filtered);
+      messageDiv.textContent = `Showing ${filtered.length} filtered records.`;
+    });
+
+    // Download CSV from current table data
+    downloadCsvBtn.addEventListener('click', () => {
+      if (!auditorData.length) {
+        alert('No data to download.');
+        return;
+      }
+
+      // Create CSV content from current table rows (filtered view)
+      let csvContent = "Audit Date,Cycle Count,Item,Warehouse,Quantity,Comments\n";
+      const rows = dataTableBody.querySelectorAll('tr');
+      rows.forEach(row => {
+        const cols = row.querySelectorAll('td');
+        if (cols.length === 6) {
+          const rowData = Array.from(cols).map(td => `"${td.textContent.replace(/"/g, '""')}"`).join(',');
+          csvContent += rowData + '\n';
+        }
+      });
+
+      const blob = new Blob([csvContent], {type: 'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'auditor_data_export.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+
+</body>
+</html>
