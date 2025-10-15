@@ -72,8 +72,6 @@
 
   <div class="side-panel">
     <h2 onclick="showWelcome()">Dashboard</h2>
-    <a onclick="showWelcome()">Dashboard Overview</a>
-    <a href="#" id="link-cycle-count">Cycle Count</a>
     <a href="#" id="link-master-reports">Master Reports</a>
     <a href="#" id="link-audit-reports">Auditor Reports</a>
     <a href="#" id="link-payments">Payments</a>
@@ -100,18 +98,18 @@
     const role = loggedInUser.role;
 
     const accessRights = {
-      'Owner': ['User Settings', 'Cycle Count', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
-      'Admin': ['User Settings', 'Cycle Count', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
-      'Executive': ['Cycle Count', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
-      'Team Leader': ['Cycle Count', 'Master Reports', 'Notifications', 'Help'],
-      'Team Member': ['Cycle Count', 'Notifications', 'Help'],
-      'Employee': ['Cycle Count', 'Notifications', 'Help']
+      'Owner': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Admin': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Executive': ['Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Team Leader': ['Master Reports', 'Notifications', 'Help'],
+      'Team Member': ['Notifications', 'Help'],
+      'Employee': ['Notifications', 'Help']
     };
 
     function restrictLinks() {
       const allLinks = {
         "User Settings": document.getElementById('link-user-settings'),
-        "Cycle Count": document.getElementById('link-cycle-count'),
+        "": document.getElementById('link-cycle-count'),
         "Master Reports": document.getElementById('link-master-reports'),
         "Auditor Reports": document.getElementById('link-audit-reports'),
         "Payments": document.getElementById('link-payments'),
@@ -161,4 +159,5 @@
 
 </body>
 </html>
+
 
