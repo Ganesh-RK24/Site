@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Auditor Data</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       margin: 0;
@@ -99,9 +99,8 @@
       background-color: #388e3c;
     }
     .message {
-      margin-top: 5px;
+      margin-top: 15px;
       font-weight: 700;
-      color: #f44336;
     }
   </style>
 </head>
@@ -112,7 +111,6 @@
     <div class="upload-section">
       <input type="file" id="fileInput" accept=".csv" />
       <button id="uploadBtn">Upload CSV</button>
-      <div id="uploadStatus" class="message"></div>
     </div>
 
     <div class="filter-section">
@@ -152,17 +150,17 @@
       </thead>
       <tbody></tbody>
     </table>
+
+    <div class="message" id="message"></div>
   </div>
 
   <script>
-    // Supabase initialization
-    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co'; // replace if needed
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY'; // replace if needed
+    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+
+    // ✅ Correct Supabase v2 initialization
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    window.supabaseClient = supabase;
-  };  
 
     let auditorData = [];
 
@@ -174,15 +172,7 @@
     const filterWarehouse = document.getElementById('filterWarehouse');
     const dataTableBody = document.querySelector('#dataTable tbody');
     const downloadBtn = document.getElementById('downloadCsvBtn');
-    const uploadStatus = document.getElementById('uploadStatus');
-
-    // Helper: Convert dd-mm-yyyy or dd/mm/yyyy to yyyy-mm-dd (ISO) for Supabase date field
-    function convertDateFormat(dateStr) {
-      if (!dateStr) return '';
-      const dmy = dateStr.match(/^(\d{2})[-\/](\d{2})[-\/](\d{4})$/);
-      if (!dmy) return dateStr; // already good or invalid format
-      return `${dmy[3]}-${dmy[2]}-${dmy[1]}`;
-    }
+    const messageDiv = document.getElementById('message');
 
     function csvToJson(csv) {
       const lines = csv.trim().split('\n');
@@ -190,16 +180,7 @@
       return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
         const obj = {};
-        headers.forEach((header, idx) => {
-          let val = values[idx] || '';
-
-          // Fix date format for Counted Date field
-          if (header === 'Counted Date' && val) {
-            val = convertDateFormat(val);
-          }
-
-          obj[header] = val;
-        });
+        headers.forEach((header, idx) => obj[header] = values[idx] || '');
         return obj;
       });
     }
@@ -210,8 +191,7 @@
         dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data to display</td></tr>';
         return;
       }
-      const limitedData = data.slice(0, 50);
-      limitedData.forEach(row => {
+      data.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row['Counted Date'] || ''}</td>
@@ -231,12 +211,12 @@
     }
 
     uploadBtn.addEventListener('click', async () => {
-      uploadStatus.textContent = '';
+      messageDiv.textContent = '';
       if (!fileInput.files.length) {
-        uploadStatus.textContent = '❌ Please select a CSV file.';
-        uploadStatus.style.color = '#f44336';
+        messageDiv.textContent = '❌ Please select a CSV file.';
         return;
       }
+
       const file = fileInput.files[0];
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -244,24 +224,20 @@
           const csvText = e.target.result;
           const jsonData = csvToJson(csvText);
 
-          // Insert into Supabase table
-          const { data, error } = await supabase
+          const { data, error } = await client
             .from('Auditor_Counted')
             .insert(jsonData);
 
           if (error) {
             console.error('Upload error:', error);
-            uploadStatus.textContent = '❌ Error uploading to Supabase. Check date formats or data.';
-            uploadStatus.style.color = '#f44336';
+            messageDiv.textContent = '❌ Error uploading to Supabase.';
           } else {
-            uploadStatus.textContent = `✅ Uploaded ${data.length} rows successfully.`;
-            uploadStatus.style.color = '#4caf50';
+            messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows successfully.`;
             await loadFromSupabase();
           }
         } catch (err) {
           console.error(err);
-          uploadStatus.textContent = '❌ Error parsing or uploading CSV.';
-          uploadStatus.style.color = '#f44336';
+          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
         }
       };
       reader.readAsText(file);
@@ -285,6 +261,7 @@
       }
 
       renderTable(filtered);
+      messageDiv.textContent = `🔍 Showing ${filtered.length} records.`;
     });
 
     downloadBtn.addEventListener('click', () => {
@@ -307,20 +284,21 @@
       a.href = url;
       a.download = 'auditor_data.csv';
       a.click();
-      URL.revokeObjectURL(url);
     });
 
     async function loadFromSupabase() {
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('Auditor_Counted')
         .select('*')
         .order('Counted Date', { ascending: false });
 
       if (error) {
         console.error('Fetch error:', error);
+        messageDiv.textContent = '❌ Error loading data from Supabase.';
       } else {
         auditorData = data;
         renderTable(auditorData);
+        messageDiv.textContent = `📄 Loaded ${auditorData.length} records.`;
       }
     }
 
@@ -330,5 +308,3 @@
   </script>
 </body>
 </html>
-
-
