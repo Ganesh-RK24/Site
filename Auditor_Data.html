@@ -1,108 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Auditor Data</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #121212;
-      color: #eee;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    h2 {
-      color: #4a90e2;
-      margin-bottom: 20px;
-    }
-    .upload-section, .filter-section {
-      background: #1f1f1f;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px #4a90e2;
-      margin-bottom: 20px;
-    }
-    input[type="file"], input[type="date"], select, button {
-      padding: 10px;
-      margin: 10px 0 15px 0;
-      border-radius: 6px;
-      border: none;
-      background-color: #333;
-      color: #eee;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    input[type="file"]::-webkit-file-upload-button {
-      background: #4a90e2;
-      color: #fff;
-      border: none;
-      padding: 8px 14px;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-    input[type="file"]::-webkit-file-upload-button:hover {
-      background: #357ABD;
-    }
-    button {
-      background-color: #4a90e2;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #357ABD;
-    }
-    .filter-row {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .filter-row > * {
-      flex: 1 1 150px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #222;
-      color: #eee;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    th, td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #444;
-      text-align: left;
-    }
-    th {
-      background-color: #4a90e2;
-    }
-    tr:hover {
-      background-color: #333;
-    }
-    .download-button {
-      margin: 15px 0;
-      background-color: #4caf50;
-      color: white;
-      font-weight: 700;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-    }
-    .download-button:hover {
-      background-color: #388e3c;
-    }
-    .message {
-      margin-top: 15px;
-      font-weight: 700;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Auditor Data</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: #121212;
+    color: #eee;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  h2 {
+    color: #4a90e2;
+    margin-bottom: 20px;
+  }
+  .upload-section {
+    background: #1f1f1f;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px #4a90e2;
+    margin-bottom: 30px;
+  }
+  input[type="file"], input[type="date"], select, input[type="number"], button {
+    width: 100%;
+    margin: 10px 0 15px 0;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    background-color: #333;
+    color: #eee;
+    box-sizing: border-box;
+  }
+  input[type="file"]::-webkit-file-upload-button {
+    background: #4a90e2;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  input[type="file"]::-webkit-file-upload-button:hover {
+    background: #357ABD;
+  }
+  button {
+    background-color: #4a90e2;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #357ABD;
+  }
+  .filter-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+  .filter-row > * {
+    flex: 1 1 150px;
+  }
+  .download-button {
+    margin-bottom: 10px;
+    background-color: #4caf50;
+    border: none;
+    color: white;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: auto;
+  }
+  .download-button:hover {
+    background-color: #388e3c;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #222;
+    color: #eee;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #444;
+    text-align: left;
+  }
+  th {
+    background-color: #4a90e2;
+  }
+  tr:hover {
+    background-color: #333;
+  }
+  .message {
+    margin-top: 15px;
+    font-weight: 700;
+  }
+</style>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -110,29 +116,34 @@
 
     <div class="upload-section">
       <input type="file" id="fileInput" accept=".csv" />
-      <button id="uploadBtn">Upload CSV</button>
+      <button id="uploadBtn">Upload CSV to Database</button>
     </div>
 
-    <div class="filter-section">
-      <div class="filter-row">
-        <input type="date" id="fromDate" placeholder="From Date" />
-        <input type="date" id="toDate" placeholder="To Date" />
-        <select id="filterWarehouse">
-          <option value="">All Warehouses</option>
-          <option value="W501">W501</option>
-          <option value="W503">W503</option>
-          <option value="W504">W504</option>
-          <option value="W506">W506</option>
-          <option value="W509">W509</option>
-          <option value="W511">W511</option>
-          <option value="W512">W512</option>
-        </select>
-      </div>
+    <div class="filter-row">
+      <label>
+        From Date:
+        <input type="date" id="filterFromDate" />
+      </label>
+      <label>
+        To Date:
+        <input type="date" id="filterToDate" />
+      </label>
+      <select id="filterWarehouse">
+        <option value="">All Warehouses</option>
+        <option value="W501">W501</option>
+        <option value="W503">W503</option>
+        <option value="W504">W504</option>
+        <option value="W506">W506</option>
+        <option value="W509">W509</option>
+        <option value="W511">W511</option>
+        <option value="W512">W512</option>
+      </select>
       <button id="filterBtn">Filter</button>
-      <button class="download-button" id="downloadCsvBtn">Download CSV</button>
     </div>
 
-    <table id="dataTable">
+    <button class="download-button" id="downloadCsvBtn">Download CSV</button>
+
+    <table id="dataTable" >
       <thead>
         <tr>
           <th>Counted Date</th>
@@ -148,164 +159,162 @@
           <th>Final Remarks</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody>
+        <!-- Data rows will be inserted here -->
+      </tbody>
     </table>
 
     <div class="message" id="message"></div>
   </div>
 
-  <script>
-    // Supabase init
-    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';  // ← replace
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';  // ← replace
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+  // Initialize Supabase
+  const supabaseUrl = 'https://YOUR-PROJECT.supabase.co';  // <-- Replace with your Supabase URL
+  const supabaseKey = 'YOUR-ANON-KEY';                      // <-- Replace with your Supabase anon/public key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    let auditorData = [];
+  let auditorData = [];
 
-    const fileInput = document.getElementById('fileInput');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const filterBtn = document.getElementById('filterBtn');
-    const fromDate = document.getElementById('fromDate');
-    const toDate = document.getElementById('toDate');
-    const filterWarehouse = document.getElementById('filterWarehouse');
-    const dataTableBody = document.querySelector('#dataTable tbody');
-    const downloadBtn = document.getElementById('downloadCsvBtn');
-    const messageDiv = document.getElementById('message');
+  const fileInput = document.getElementById('fileInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const filterFromDate = document.getElementById('filterFromDate');
+  const filterToDate = document.getElementById('filterToDate');
+  const filterWarehouse = document.getElementById('filterWarehouse');
+  const filterBtn = document.getElementById('filterBtn');
+  const dataTableBody = document.querySelector('#dataTable tbody');
+  const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+  const messageDiv = document.getElementById('message');
 
-    function csvToJson(csv) {
-      const lines = csv.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.trim());
-      return lines.slice(1).map(line => {
-        const values = line.split(',').map(v => v.trim());
-        const obj = {};
-        headers.forEach((header, idx) => obj[header] = values[idx] || '');
-        return obj;
-      });
+  // Utility: Parse CSV string to JSON array, expects exact columns matching DB and your CSV:
+  // Counted Date, Warehouse No, Auditor, Bin Code, Verified, Scanned Qty, Auditor Qty, Mismatch, Reverified, Reverified Phy Qty, Final Remarks
+  function csvToJson(csv) {
+    const lines = csv.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    return lines.slice(1).map(line => {
+      const values = line.split(',').map(v => v.trim());
+      const obj = {};
+      headers.forEach((header, idx) => obj[header] = values[idx] || '');
+      return obj;
+    });
+  }
+
+  // Render table rows based on data array
+  function renderTable(data) {
+    dataTableBody.innerHTML = '';
+    if (!data.length) {
+      dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:#ccc;">No data to display</td></tr>';
+      return;
     }
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row['Counted Date'] || ''}</td>
+        <td>${row['Warehouse No'] || ''}</td>
+        <td>${row['Auditor'] || ''}</td>
+        <td>${row['Bin Code'] || ''}</td>
+        <td>${row['Verified'] || ''}</td>
+        <td>${row['Scanned Qty'] || ''}</td>
+        <td>${row['Auditor Qty'] || ''}</td>
+        <td>${row['Mismatch'] || ''}</td>
+        <td>${row['Reverified'] || ''}</td>
+        <td>${row['Reverified Phy Qty'] || ''}</td>
+        <td>${row['Final Remarks'] || ''}</td>
+      `;
+      dataTableBody.appendChild(tr);
+    });
+  }
 
-    function renderTable(data) {
-      dataTableBody.innerHTML = '';
-      if (!data.length) {
-        dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data to display</td></tr>';
-        return;
-      }
-      data.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${row['Counted Date'] || ''}</td>
-          <td>${row['Warehouse No'] || ''}</td>
-          <td>${row['Auditor'] || ''}</td>
-          <td>${row['Bin Code'] || ''}</td>
-          <td>${row['Verified'] || ''}</td>
-          <td>${row['Scanned Qty'] || ''}</td>
-          <td>${row['Auditor Qty'] || ''}</td>
-          <td>${row['Mismatch'] || ''}</td>
-          <td>${row['Reverified'] || ''}</td>
-          <td>${row['Reverified Phy Qty'] || ''}</td>
-          <td>${row['Final Remarks'] || ''}</td>
-        `;
-        dataTableBody.appendChild(tr);
-      });
+  // Upload CSV button handler - uploads data to Supabase
+  uploadBtn.addEventListener('click', async () => {
+    messageDiv.textContent = '';
+    if (!fileInput.files.length) {
+      alert('Please select a CSV file to upload.');
+      return;
     }
+    const file = fileInput.files[0];
+    const reader = new FileReader();
 
-    uploadBtn.addEventListener('click', async () => {
-      messageDiv.textContent = '';
-      if (!fileInput.files.length) {
-        messageDiv.textContent = '❌ Please select a CSV file.';
-        return;
-      }
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const csvText = e.target.result;
-          const jsonData = csvToJson(csvText);
+    reader.onload = async (e) => {
+      try {
+        const text = e.target.result;
+        const jsonData = csvToJson(text);
 
-          // Insert into Supabase table
-          const { data, error } = await supabase
-            .from('Auditor_Counted')
-            .insert(jsonData);
+        // Supabase insert
+        // Adjust table name and column names if different
+        const { data, error } = await supabase.from('auditor_data').insert(jsonData);
 
-          if (error) {
-            console.error('Upload error:', error);
-            messageDiv.textContent = '❌ Error uploading to Supabase.';
-          } else {
-            messageDiv.textContent = `✅ Uploaded ${data.length} rows successfully.`;
-            // reload data
-            await loadFromSupabase();
-          }
-        } catch (err) {
-          console.error(err);
-          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
+        if (error) {
+          messageDiv.textContent = 'Error uploading to database: ' + error.message;
+          console.error(error);
+          return;
         }
-      };
-      reader.readAsText(file);
-    });
 
-    filterBtn.addEventListener('click', () => {
-      const from = fromDate.value;
-      const to = toDate.value;
-      const wh = filterWarehouse.value;
-
-      let filtered = auditorData;
-
-      if (from) {
-        filtered = filtered.filter(r => r['Counted Date'] >= from);
-      }
-      if (to) {
-        filtered = filtered.filter(r => r['Counted Date'] <= to);
-      }
-      if (wh) {
-        filtered = filtered.filter(r => r['Warehouse No'] === wh);
-      }
-
-      renderTable(filtered);
-      messageDiv.textContent = `🔍 Showing ${filtered.length} records.`;
-    });
-
-    downloadBtn.addEventListener('click', () => {
-      if (!auditorData.length) {
-        alert('No data to download.');
-        return;
-      }
-      let csv = "Counted Date,Warehouse No,Auditor,Bin Code,Verified,Scanned Qty,Auditor Qty,Mismatch,Reverified,Reverified Phy Qty,Final Remarks\n";
-      auditorData.forEach(r => {
-        const row = [
-          r['Counted Date'], r['Warehouse No'], r['Auditor'], r['Bin Code'],
-          r['Verified'], r['Scanned Qty'], r['Auditor Qty'], r['Mismatch'],
-          r['Reverified'], r['Reverified Phy Qty'], r['Final Remarks']
-        ];
-        csv += row.map(v => `"${(v != null ? v : '')}"`).join(',') + '\n';
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'auditor_data.csv';
-      a.click();
-    });
-
-    async function loadFromSupabase() {
-      const { data, error } = await supabase
-        .from('Auditor_Counted')
-        .select('*')
-        .order('Counted Date', { ascending: false });
-
-      if (error) {
-        console.error('Fetch error:', error);
-        messageDiv.textContent = '❌ Error loading data from Supabase.';
-      } else {
-        auditorData = data;
+        auditorData = jsonData;
         renderTable(auditorData);
-        messageDiv.textContent = `📄 Loaded ${auditorData.length} records.`;
+        messageDiv.textContent = `Successfully uploaded ${auditorData.length} records to database.`;
+      } catch (err) {
+        messageDiv.textContent = 'Error parsing or uploading CSV file.';
+        console.error(err);
       }
+    };
+    reader.readAsText(file);
+  });
+
+  // Filter data based on date range and warehouse
+  filterBtn.addEventListener('click', () => {
+    let filtered = auditorData;
+
+    const fromDateVal = filterFromDate.value;
+    const toDateVal = filterToDate.value;
+    const warehouseVal = filterWarehouse.value;
+
+    if (fromDateVal) {
+      filtered = filtered.filter(row => row['Counted Date'] >= fromDateVal);
+    }
+    if (toDateVal) {
+      filtered = filtered.filter(row => row['Counted Date'] <= toDateVal);
+    }
+    if (warehouseVal) {
+      filtered = filtered.filter(row => row['Warehouse No'] === warehouseVal);
     }
 
-    // On page load
-    window.addEventListener('load', () => {
-      loadFromSupabase();
+    renderTable(filtered);
+    messageDiv.textContent = `Showing ${filtered.length} filtered records.`;
+  });
+
+  // Download CSV from current table view (filtered)
+  downloadCsvBtn.addEventListener('click', () => {
+    if (!auditorData.length) {
+      alert('No data to download.');
+      return;
+    }
+
+    // Build CSV headers matching your table columns
+    const headers = ['Counted Date','Warehouse No','Auditor','Bin Code','Verified','Scanned Qty','Auditor Qty','Mismatch','Reverified','Reverified Phy Qty','Final Remarks'];
+
+    // Get current visible rows from table
+    const rows = dataTableBody.querySelectorAll('tr');
+    let csvContent = headers.join(',') + '\n';
+
+    rows.forEach(row => {
+      const cols = row.querySelectorAll('td');
+      if (cols.length === headers.length) {
+        const rowData = Array.from(cols).map(td => `"${td.textContent.replace(/"/g, '""')}"`).join(',');
+        csvContent += rowData + '\n';
+      }
     });
-  </script>
+
+    // Download file
+    const blob = new Blob([csvContent], {type: 'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'auditor_data_export.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>
+
 </body>
 </html>
 
