@@ -96,10 +96,10 @@
   </div>
 
   <script>
+    // ✅ Prevent access without login (even via back button)
     const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-
     if (!loggedInUser || !loggedInUser.username) {
-      window.location.href = 'login.html';
+      window.location.href = 'index.html'; // redirect if not logged in
     }
 
     const role = loggedInUser.role;
@@ -149,7 +149,6 @@
 
     function showAuditorReports() {
       document.getElementById('welcome').textContent = 'Auditor Reports';
-      // Replace below URL with your actual Auditor Data page URL if needed
       document.getElementById('content-area').innerHTML = `
         <iframe 
           title="Auditor Data" 
@@ -168,15 +167,16 @@
       document.getElementById('content-area').innerHTML = `<p>Manage users here...</p>`;
     }
 
+    // ✅ Updated logout to redirect to index.html
     function logout() {
       localStorage.removeItem('loggedInUser');
-      window.location.href = 'login.html';
+      window.location.href = 'index.html';
     }
 
-    // Automatically load dashboard on page load
+    // ✅ Auto-load dashboard PowerBI on load
     window.onload = function() {
       if (!loggedInUser || !loggedInUser.username) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
       } else {
         showWelcome();
       }
