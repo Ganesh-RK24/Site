@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Auditor Data</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       margin: 0;
@@ -157,9 +157,11 @@
   <script>
     const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+
+    // ✅ Correct Supabase v2 initialization
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
-    
+
     let auditorData = [];
 
     const fileInput = document.getElementById('fileInput');
@@ -210,8 +212,6 @@
 
     uploadBtn.addEventListener('click', async () => {
       messageDiv.textContent = '';
-      console.log("Upload clicked");
-
       if (!fileInput.files.length) {
         messageDiv.textContent = '❌ Please select a CSV file.';
         return;
@@ -219,38 +219,20 @@
 
       const file = fileInput.files[0];
       const reader = new FileReader();
-
       reader.onload = async (e) => {
         try {
           const csvText = e.target.result;
-          console.log("CSV Text loaded");
-
           const jsonData = csvToJson(csvText);
-          console.log("Parsed JSON:", jsonData);
 
-          const mappedData = jsonData.map(row => ({
-            "Counted Date": row["Counted Date"],
-            "Warehouse No": row["Warehouse No"],
-            "Auditor": row["Auditor"],
-            "Bin Code": row["Bin Code"],
-            "Verified": row["Verified"],
-            "Scanned Qty": Number(row["Scanned Qty"]),
-            "Auditor Qty": Number(row["Auditor Qty"]),
-            "Mismatch": Number(row["Mismatch"]),
-            "Reverified": row["Reverified"],
-            "Reverified Phy Qty": Number(row["Reverified Phy Qty"]),
-            "Final Remarks": row["Final Remarks"]
-          }));
-
-          const { data, error } = await supabase
+          const { data, error } = await client
             .from('Auditor_Counted')
-            .insert(mappedData);
+            .insert(jsonData);
 
           if (error) {
-            console.error('Supabase error:', error);
+            console.error('Upload error:', error);
             messageDiv.textContent = '❌ Error uploading to Supabase.';
           } else {
-            messageDiv.textContent = `✅ Uploaded ${data.length} rows successfully.`;
+            messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows successfully.`;
             await loadFromSupabase();
           }
         } catch (err) {
@@ -258,7 +240,6 @@
           messageDiv.textContent = '❌ Error parsing/uploading CSV.';
         }
       };
-
       reader.readAsText(file);
     });
 
@@ -269,9 +250,15 @@
 
       let filtered = auditorData;
 
-      if (from) filtered = filtered.filter(r => r['Counted Date'] >= from);
-      if (to) filtered = filtered.filter(r => r['Counted Date'] <= to);
-      if (wh) filtered = filtered.filter(r => r['Warehouse No'] === wh);
+      if (from) {
+        filtered = filtered.filter(r => r['Counted Date'] >= from);
+      }
+      if (to) {
+        filtered = filtered.filter(r => r['Counted Date'] <= to);
+      }
+      if (wh) {
+        filtered = filtered.filter(r => r['Warehouse No'] === wh);
+      }
 
       renderTable(filtered);
       messageDiv.textContent = `🔍 Showing ${filtered.length} records.`;
@@ -289,7 +276,7 @@
           r['Verified'], r['Scanned Qty'], r['Auditor Qty'], r['Mismatch'],
           r['Reverified'], r['Reverified Phy Qty'], r['Final Remarks']
         ];
-        csv += row.map(v => `"${v != null ? v : ''}"`).join(',') + '\n';
+        csv += row.map(v => `"${(v != null ? v : '')}"`).join(',') + '\n';
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -300,7 +287,7 @@
     });
 
     async function loadFromSupabase() {
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('Auditor_Counted')
         .select('*')
         .order('Counted Date', { ascending: false });
@@ -321,4 +308,3 @@
   </script>
 </body>
 </html>
-
