@@ -101,6 +101,7 @@
     .message {
       margin-top: 15px;
       font-weight: 700;
+      min-height: 24px;
     }
   </style>
 </head>
@@ -111,6 +112,7 @@
     <div class="upload-section">
       <input type="file" id="fileInput" accept=".csv" />
       <button id="uploadBtn">Upload CSV</button>
+      <div class="message" id="message"></div>
     </div>
 
     <div class="filter-section">
@@ -150,15 +152,12 @@
       </thead>
       <tbody></tbody>
     </table>
-
-    <div class="message" id="message"></div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
 
-    // Correct Supabase v2 initialization
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -174,27 +173,43 @@
     const downloadBtn = document.getElementById('downloadCsvBtn');
     const messageDiv = document.getElementById('message');
 
-    // Revised csvToJson function with date format fix
+    // Convert CSV to JSON objects
     function csvToJson(csv) {
       const lines = csv.trim().split('\n');
       const headers = lines[0].split(',').map(h => h.trim());
       return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
         const obj = {};
-        headers.forEach((header, idx) => {
-          let value = values[idx] || '';
-
-          // Fix date format for Counted Date (DD-MM-YYYY to YYYY-MM-DD)
-          if (header === 'Counted Date' && value.includes('-')) {
-            const [d, m, y] = value.split('-');
-            if (d.length === 2 && m.length === 2 && y.length === 4) {
-              value = `${y}-${m}-${d}`;
-            }
-          }
-
-          obj[header] = value;
-        });
+        headers.forEach((header, idx) => obj[header] = values[idx] || '');
         return obj;
+      });
+    }
+
+    // Format date from DD-MM-YYYY or similar to YYYY-MM-DD for Supabase
+    function formatDateToISO(dateStr) {
+      // Support DD-MM-YYYY or DD/MM/YYYY or YYYY-MM-DD formats
+      if (!dateStr) return '';
+      const parts = dateStr.includes('-') ? dateStr.split('-') : dateStr.split('/');
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          // Already ISO format
+          return dateStr;
+        } else {
+          // Assume DD-MM-YYYY or DD/MM/YYYY
+          const [dd, mm, yyyy] = parts;
+          return `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+        }
+      }
+      return dateStr;
+    }
+
+    // Replace date formats in data array before upload
+    function normalizeDateFields(dataArray) {
+      return dataArray.map(item => {
+        if (item['Counted Date']) {
+          item['Counted Date'] = formatDateToISO(item['Counted Date']);
+        }
+        return item;
       });
     }
 
@@ -204,7 +219,9 @@
         dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data to display</td></tr>';
         return;
       }
-      data.slice(0, 50).forEach(row => {  // Show only first 50 rows
+      const limitedData = data.slice(0, 50); // show only first 50 rows
+
+      limitedData.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row['Counted Date'] || ''}</td>
@@ -224,8 +241,10 @@
     }
 
     uploadBtn.addEventListener('click', async () => {
+      messageDiv.style.color = '#eee';
       messageDiv.textContent = '';
       if (!fileInput.files.length) {
+        messageDiv.style.color = '#f44336';
         messageDiv.textContent = '❌ Please select a CSV file.';
         return;
       }
@@ -234,8 +253,11 @@
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          const csvText = e.target.result;
-          const jsonData = csvToJson(csvText);
+          let csvText = e.target.result;
+          let jsonData = csvToJson(csvText);
+
+          // Normalize date formats for Supabase compatibility
+          jsonData = normalizeDateFields(jsonData);
 
           const { data, error } = await client
             .from('Auditor_Counted')
@@ -243,38 +265,43 @@
 
           if (error) {
             console.error('Upload error:', error);
-            messageDiv.textContent = '❌ Error uploading to Supabase: ' + (error.message || 'Unknown error');
+            let errorMsg = `❌ Upload failed: ${error.message}`;
+            if (error.code) errorMsg += ` (Code: ${error.code})`;
+            if (error.hint) errorMsg += ` Hint: ${error.hint}`;
+            messageDiv.style.color = '#f44336';
+            messageDiv.textContent = errorMsg;
           } else {
+            messageDiv.style.color = '#4caf50';
             messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows successfully.`;
             await loadFromSupabase();
           }
         } catch (err) {
           console.error(err);
-          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
+          messageDiv.style.color = '#f44336';
+          messageDiv.textContent = '❌ Unexpected error parsing/uploading CSV.';
         }
       };
       reader.readAsText(file);
     });
 
     filterBtn.addEventListener('click', () => {
+      let filtered = [...auditorData];
+
       const from = fromDate.value;
       const to = toDate.value;
       const wh = filterWarehouse.value;
 
-      let filtered = auditorData;
-
       if (from) {
-        filtered = filtered.filter(r => r['Counted Date'] >= from);
+        filtered = filtered.filter(row => row['Counted Date'] && row['Counted Date'] >= from);
       }
       if (to) {
-        filtered = filtered.filter(r => r['Counted Date'] <= to);
+        filtered = filtered.filter(row => row['Counted Date'] && row['Counted Date'] <= to);
       }
       if (wh) {
-        filtered = filtered.filter(r => r['Warehouse No'] === wh);
+        filtered = filtered.filter(row => row['Warehouse No'] === wh);
       }
 
       renderTable(filtered);
-      messageDiv.textContent = `🔍 Showing ${Math.min(filtered.length, 50)} of ${filtered.length} records.`;
     });
 
     downloadBtn.addEventListener('click', () => {
@@ -282,37 +309,43 @@
         alert('No data to download.');
         return;
       }
-      let csv = "Counted Date,Warehouse No,Auditor,Bin Code,Verified,Scanned Qty,Auditor Qty,Mismatch,Reverified,Reverified Phy Qty,Final Remarks\n";
-      auditorData.forEach(r => {
-        const row = [
-          r['Counted Date'], r['Warehouse No'], r['Auditor'], r['Bin Code'],
-          r['Verified'], r['Scanned Qty'], r['Auditor Qty'], r['Mismatch'],
-          r['Reverified'], r['Reverified Phy Qty'], r['Final Remarks']
-        ];
-        csv += row.map(v => `"${(v != null ? v : '')}"`).join(',') + '\n';
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
+      // Convert to CSV
+      const headers = Object.keys(auditorData[0]);
+      const csvRows = [
+        headers.join(','),
+        ...auditorData.map(row => headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(','))
+      ];
+      const csvString = csvRows.join('\n');
+
+      const blob = new Blob([csvString], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement('a');
-      a.href = url;
-      a.download = 'auditor_data.csv';
+      a.setAttribute('hidden', '');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `auditor_data_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     });
 
     async function loadFromSupabase() {
       const { data, error } = await client
         .from('Auditor_Counted')
         .select('*')
-        .order('Counted Date', { ascending: false });
+        .order('Counted Date', { ascending: false })
+        .limit(100);
 
       if (error) {
-        console.error('Fetch error:', error);
-        messageDiv.textContent = '❌ Error loading data from Supabase.';
-      } else {
-        auditorData = data;
-        renderTable(auditorData);
-        messageDiv.textContent = `📊 Loaded ${data.length} records from Supabase.`;
+        messageDiv.style.color = '#f44336';
+        messageDiv.textContent = '❌ Error loading data from database.';
+        console.error(error);
+        return;
       }
+
+      auditorData = data || [];
+      renderTable(auditorData);
     }
 
     // Initial load
