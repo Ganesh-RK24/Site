@@ -160,6 +160,9 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY'; // replace if needed
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    window.supabaseClient = supabase;
+  };  
+
     let auditorData = [];
 
     const fileInput = document.getElementById('fileInput');
@@ -326,3 +329,4 @@
   </script>
 </body>
 </html>
+
