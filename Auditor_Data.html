@@ -66,6 +66,13 @@
     .filter-row > * {
       flex: 1 1 150px;
     }
+    .button-row {
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: -10px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -130,8 +137,10 @@
           <option value="W512">W512</option>
         </select>
       </div>
-      <button id="filterBtn">Filter</button>
-      <button class="download-button" id="downloadCsvBtn">Download CSV</button>
+      <div class="button-row">
+        <button id="filterBtn">Filter</button>
+        <button class="download-button" id="downloadCsvBtn">Download CSV</button>
+      </div>
     </div>
 
     <table id="dataTable">
@@ -241,6 +250,9 @@
     }
 
     uploadBtn.addEventListener('click', async () => {
+      messageDiv.style.color = '#4a90e2';
+      messageDiv.textContent = '⏳ Uploading... please wait.';
+
       messageDiv.style.color = '#eee';
       messageDiv.textContent = '';
       if (!fileInput.files.length) {
@@ -287,8 +299,8 @@
     filterBtn.addEventListener('click', () => {
       let filtered = [...auditorData];
 
-      const from = fromDate.value;
-      const to = toDate.value;
+      const from = formatDateToISO(fromDate.value);
+      const to = formatDateToISO(toDate.value);
       const wh = filterWarehouse.value;
 
       if (from) {
@@ -331,6 +343,9 @@
     });
 
     async function loadFromSupabase() {
+      messageDiv.style.color = '#4a90e2';
+      messageDiv.textContent = '⏳ Loading data...';
+
       const { data, error } = await client
         .from('Auditor_Counted')
         .select('*')
@@ -346,6 +361,7 @@
 
       auditorData = data || [];
       renderTable(auditorData);
+      messageDiv.textContent = '';
     }
 
     // Initial load
