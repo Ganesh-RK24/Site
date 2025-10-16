@@ -4,185 +4,239 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Auditor Data</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background: #121212;
       color: #eee;
       padding: 20px;
     }
-
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
     h2 {
       color: #4a90e2;
       margin-bottom: 20px;
     }
-
     .upload-section, .filter-section {
       background: #1f1f1f;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px #4a90e2;
+      box-shadow: 0 0 15px #4a90e2;
       margin-bottom: 20px;
     }
-
-    input[type="file"], input[type="date"], button, select {
+    input[type="file"], input[type="date"], select, button {
       padding: 10px;
-      margin: 10px 10px 10px 0;
-      border-radius: 5px;
+      margin: 10px 0 15px 0;
+      border-radius: 6px;
       border: none;
-      background: #333;
+      background-color: #333;
       color: #eee;
+      width: 100%;
+      box-sizing: border-box;
     }
-
     input[type="file"]::-webkit-file-upload-button {
-      background-color: #4a90e2;
+      background: #4a90e2;
       color: #fff;
       border: none;
-      border-radius: 5px;
-      padding: 8px 12px;
+      padding: 8px 14px;
       cursor: pointer;
+      border-radius: 6px;
     }
-
+    input[type="file"]::-webkit-file-upload-button:hover {
+      background: #357ABD;
+    }
     button {
       background-color: #4a90e2;
+      font-weight: 700;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #357ABD;
     }
-
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .filter-row > * {
+      flex: 1 1 150px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      background: #222;
+      color: #eee;
+      border-radius: 8px;
+      overflow: hidden;
     }
-
     th, td {
-      padding: 10px;
+      padding: 12px 15px;
       border-bottom: 1px solid #444;
+      text-align: left;
     }
-
     th {
-      background: #4a90e2;
-      color: white;
+      background-color: #4a90e2;
     }
-
     tr:hover {
-      background-color: #222;
+      background-color: #333;
     }
-
+    .download-button {
+      margin: 15px 0;
+      background-color: #4caf50;
+      color: white;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+    }
+    .download-button:hover {
+      background-color: #388e3c;
+    }
     .message {
-      margin-top: 10px;
-      font-weight: bold;
+      margin-top: 15px;
+      font-weight: 700;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>Auditor Data Upload & Reports</h2>
 
-  <h2>Auditor Data Upload & Report</h2>
+    <div class="upload-section">
+      <input type="file" id="fileInput" accept=".csv" />
+      <button id="uploadBtn">Upload CSV</button>
+    </div>
 
-  <div class="upload-section">
-    <input type="file" id="fileInput" accept=".csv" />
-    <button id="uploadBtn">Upload CSV</button>
+    <div class="filter-section">
+      <div class="filter-row">
+        <input type="date" id="fromDate" placeholder="From Date" />
+        <input type="date" id="toDate" placeholder="To Date" />
+        <select id="filterWarehouse">
+          <option value="">All Warehouses</option>
+          <option value="W501">W501</option>
+          <option value="W503">W503</option>
+          <option value="W504">W504</option>
+          <option value="W506">W506</option>
+          <option value="W509">W509</option>
+          <option value="W511">W511</option>
+          <option value="W512">W512</option>
+        </select>
+      </div>
+      <button id="filterBtn">Filter</button>
+      <button class="download-button" id="downloadCsvBtn">Download CSV</button>
+    </div>
+
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Counted Date</th>
+          <th>Warehouse No</th>
+          <th>Auditor</th>
+          <th>Bin Code</th>
+          <th>Verified</th>
+          <th>Scanned Qty</th>
+          <th>Auditor Qty</th>
+          <th>Mismatch</th>
+          <th>Reverified</th>
+          <th>Reverified Phy Qty</th>
+          <th>Final Remarks</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
     <div class="message" id="message"></div>
   </div>
 
-  <div class="filter-section">
-    <label>From: <input type="date" id="fromDate" /></label>
-    <label>To: <input type="date" id="toDate" /></label>
-    <button id="filterBtn">Filter</button>
-    <button id="downloadBtn">Download CSV</button>
-  </div>
-
-  <table id="dataTable">
-    <thead>
-      <tr>
-        <th>Counted Date</th>
-        <th>Warehouse No</th>
-        <th>Auditor</th>
-        <th>Bin Code</th>
-        <th>Verified</th>
-        <th>Scanned Qty</th>
-        <th>Auditor Qty</th>
-        <th>Mismatch</th>
-        <th>Reverified</th>
-        <th>Reverified Phy Qty</th>
-        <th>Final Remarks</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
   <script>
+    // Supabase init
+    const SUPABASE_URL = 'https://your-project.supabase.co';  // ← replace
+    const SUPABASE_KEY = 'your-anon-key';  // ← replace
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     let auditorData = [];
 
     const fileInput = document.getElementById('fileInput');
     const uploadBtn = document.getElementById('uploadBtn');
-    const message = document.getElementById('message');
-    const dataTableBody = document.querySelector('#dataTable tbody');
     const filterBtn = document.getElementById('filterBtn');
     const fromDate = document.getElementById('fromDate');
     const toDate = document.getElementById('toDate');
-    const downloadBtn = document.getElementById('downloadBtn');
+    const filterWarehouse = document.getElementById('filterWarehouse');
+    const dataTableBody = document.querySelector('#dataTable tbody');
+    const downloadBtn = document.getElementById('downloadCsvBtn');
+    const messageDiv = document.getElementById('message');
 
     function csvToJson(csv) {
       const lines = csv.trim().split('\n');
       const headers = lines[0].split(',').map(h => h.trim());
       return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
-        const row = {};
-        headers.forEach((h, i) => {
-          row[h] = values[i] || '';
-        });
-        return row;
+        const obj = {};
+        headers.forEach((header, idx) => obj[header] = values[idx] || '');
+        return obj;
       });
     }
 
     function renderTable(data) {
       dataTableBody.innerHTML = '';
       if (!data.length) {
-        dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data</td></tr>';
+        dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data to display</td></tr>';
         return;
       }
-
       data.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${row['Counted Date']}</td>
-          <td>${row['Warehouse No']}</td>
-          <td>${row['Auditor']}</td>
-          <td>${row['Bin Code']}</td>
-          <td>${row['Verified']}</td>
-          <td>${row['Scanned Qty']}</td>
-          <td>${row['Auditor Qty']}</td>
-          <td>${row['Mismatch']}</td>
-          <td>${row['Reverified']}</td>
-          <td>${row['Reverified Phy Qty']}</td>
-          <td>${row['Final Remarks']}</td>
+          <td>${row['Counted Date'] || ''}</td>
+          <td>${row['Warehouse No'] || ''}</td>
+          <td>${row['Auditor'] || ''}</td>
+          <td>${row['Bin Code'] || ''}</td>
+          <td>${row['Verified'] || ''}</td>
+          <td>${row['Scanned Qty'] || ''}</td>
+          <td>${row['Auditor Qty'] || ''}</td>
+          <td>${row['Mismatch'] || ''}</td>
+          <td>${row['Reverified'] || ''}</td>
+          <td>${row['Reverified Phy Qty'] || ''}</td>
+          <td>${row['Final Remarks'] || ''}</td>
         `;
         dataTableBody.appendChild(tr);
       });
     }
 
-    uploadBtn.addEventListener('click', () => {
-      const file = fileInput.files[0];
-      if (!file) {
-        message.textContent = '❌ Please select a file.';
+    uploadBtn.addEventListener('click', async () => {
+      messageDiv.textContent = '';
+      if (!fileInput.files.length) {
+        messageDiv.textContent = '❌ Please select a CSV file.';
         return;
       }
-
+      const file = fileInput.files[0];
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
           const csvText = e.target.result;
-          auditorData = csvToJson(csvText);
-          renderTable(auditorData);
-          message.textContent = `✅ Loaded ${auditorData.length} records.`;
+          const jsonData = csvToJson(csvText);
+
+          // Insert into Supabase table
+          const { data, error } = await supabase
+            .from('Auditor_Counted')
+            .insert(jsonData);
+
+          if (error) {
+            console.error('Upload error:', error);
+            messageDiv.textContent = '❌ Error uploading to Supabase.';
+          } else {
+            messageDiv.textContent = `✅ Uploaded ${data.length} rows successfully.`;
+            // reload data
+            await loadFromSupabase();
+          }
         } catch (err) {
           console.error(err);
-          message.textContent = '❌ Error parsing CSV.';
+          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
         }
       };
       reader.readAsText(file);
@@ -191,42 +245,66 @@
     filterBtn.addEventListener('click', () => {
       const from = fromDate.value;
       const to = toDate.value;
+      const wh = filterWarehouse.value;
+
       let filtered = auditorData;
 
       if (from) {
-        filtered = filtered.filter(row => row['Counted Date'] >= from);
+        filtered = filtered.filter(r => r['Counted Date'] >= from);
       }
       if (to) {
-        filtered = filtered.filter(row => row['Counted Date'] <= to);
+        filtered = filtered.filter(r => r['Counted Date'] <= to);
+      }
+      if (wh) {
+        filtered = filtered.filter(r => r['Warehouse No'] === wh);
       }
 
       renderTable(filtered);
-      message.textContent = `Showing ${filtered.length} records.`;
+      messageDiv.textContent = `🔍 Showing ${filtered.length} records.`;
     });
 
     downloadBtn.addEventListener('click', () => {
-      const rows = Array.from(dataTableBody.querySelectorAll('tr'));
-      if (!rows.length || rows[0].children[0].textContent === 'No data') {
+      if (!auditorData.length) {
         alert('No data to download.');
         return;
       }
-
-      const headers = ['Counted Date', 'Warehouse No', 'Auditor', 'Bin Code', 'Verified', 'Scanned Qty', 'Auditor Qty', 'Mismatch', 'Reverified', 'Reverified Phy Qty', 'Final Remarks'];
-      let csv = headers.join(',') + '\n';
-
-      rows.forEach(tr => {
-        const cells = tr.querySelectorAll('td');
-        const values = Array.from(cells).map(td => `"${td.textContent.replace(/"/g, '""')}"`);
-        csv += values.join(',') + '\n';
+      let csv = "Counted Date,Warehouse No,Auditor,Bin Code,Verified,Scanned Qty,Auditor Qty,Mismatch,Reverified,Reverified Phy Qty,Final Remarks\n";
+      auditorData.forEach(r => {
+        const row = [
+          r['Counted Date'], r['Warehouse No'], r['Auditor'], r['Bin Code'],
+          r['Verified'], r['Scanned Qty'], r['Auditor Qty'], r['Mismatch'],
+          r['Reverified'], r['Reverified Phy Qty'], r['Final Remarks']
+        ];
+        csv += row.map(v => `"${(v != null ? v : '')}"`).join(',') + '\n';
       });
-
       const blob = new Blob([csv], { type: 'text/csv' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'auditor_data_filtered.csv';
-      link.click();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'auditor_data.csv';
+      a.click();
+    });
+
+    async function loadFromSupabase() {
+      const { data, error } = await supabase
+        .from('Auditor_Counted')
+        .select('*')
+        .order('Counted Date', { ascending: false });
+
+      if (error) {
+        console.error('Fetch error:', error);
+        messageDiv.textContent = '❌ Error loading data from Supabase.';
+      } else {
+        auditorData = data;
+        renderTable(auditorData);
+        messageDiv.textContent = `📄 Loaded ${auditorData.length} records.`;
+      }
+    }
+
+    // On page load
+    window.addEventListener('load', () => {
+      loadFromSupabase();
     });
   </script>
-
 </body>
 </html>
