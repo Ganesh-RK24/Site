@@ -180,7 +180,17 @@
       return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
         const obj = {};
-        headers.forEach((header, idx) => obj[header] = values[idx] || '');
+        headers.forEach((header, idx) => {
+          let value = values[idx] || '';
+          // Convert 'Counted Date' from DD-MM-YYYY to YYYY-MM-DD
+          if (header === 'Counted Date' && value.includes('-')) {
+            const parts = value.split('-');
+            if (parts.length === 3) {
+              value = `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
+            }
+          }
+          obj[header] = value;
+        });
         return obj;
       });
     }
@@ -308,3 +318,4 @@
   </script>
 </body>
 </html>
+
