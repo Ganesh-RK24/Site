@@ -101,7 +101,6 @@
     .message {
       margin-top: 15px;
       font-weight: 700;
-      color: #ff6b6b;
     }
   </style>
 </head>
@@ -112,7 +111,6 @@
     <div class="upload-section">
       <input type="file" id="fileInput" accept=".csv" />
       <button id="uploadBtn">Upload CSV</button>
-      <div class="message" id="message"></div>
     </div>
 
     <div class="filter-section">
@@ -152,11 +150,15 @@
       </thead>
       <tbody></tbody>
     </table>
+
+    <div class="message" id="message"></div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+
+    // Correct Supabase v2 initialization
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -172,21 +174,24 @@
     const downloadBtn = document.getElementById('downloadCsvBtn');
     const messageDiv = document.getElementById('message');
 
+    // Revised csvToJson function with date format fix
     function csvToJson(csv) {
       const lines = csv.trim().split('\n');
       const headers = lines[0].split(',').map(h => h.trim());
-
       return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
         const obj = {};
         headers.forEach((header, idx) => {
           let value = values[idx] || '';
+
+          // Fix date format for Counted Date (DD-MM-YYYY to YYYY-MM-DD)
           if (header === 'Counted Date' && value.includes('-')) {
             const [d, m, y] = value.split('-');
             if (d.length === 2 && m.length === 2 && y.length === 4) {
               value = `${y}-${m}-${d}`;
             }
           }
+
           obj[header] = value;
         });
         return obj;
@@ -195,12 +200,11 @@
 
     function renderTable(data) {
       dataTableBody.innerHTML = '';
-      const limitedData = data.slice(0, 50);
-      if (!limitedData.length) {
+      if (!data.length) {
         dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data to display</td></tr>';
         return;
       }
-      limitedData.forEach(row => {
+      data.slice(0, 50).forEach(row => {  // Show only first 50 rows
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row['Counted Date'] || ''}</td>
@@ -239,7 +243,7 @@
 
           if (error) {
             console.error('Upload error:', error);
-            messageDiv.textContent = '❌ Error uploading to Supabase.';
+            messageDiv.textContent = '❌ Error uploading to Supabase: ' + (error.message || 'Unknown error');
           } else {
             messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows successfully.`;
             await loadFromSupabase();
@@ -259,12 +263,18 @@
 
       let filtered = auditorData;
 
-      if (from) filtered = filtered.filter(r => r['Counted Date'] >= from);
-      if (to) filtered = filtered.filter(r => r['Counted Date'] <= to);
-      if (wh) filtered = filtered.filter(r => r['Warehouse No'] === wh);
+      if (from) {
+        filtered = filtered.filter(r => r['Counted Date'] >= from);
+      }
+      if (to) {
+        filtered = filtered.filter(r => r['Counted Date'] <= to);
+      }
+      if (wh) {
+        filtered = filtered.filter(r => r['Warehouse No'] === wh);
+      }
 
       renderTable(filtered);
-      messageDiv.textContent = `🔍 Showing ${filtered.length} records.`;
+      messageDiv.textContent = `🔍 Showing ${Math.min(filtered.length, 50)} of ${filtered.length} records.`;
     });
 
     downloadBtn.addEventListener('click', () => {
@@ -272,7 +282,6 @@
         alert('No data to download.');
         return;
       }
-
       let csv = "Counted Date,Warehouse No,Auditor,Bin Code,Verified,Scanned Qty,Auditor Qty,Mismatch,Reverified,Reverified Phy Qty,Final Remarks\n";
       auditorData.forEach(r => {
         const row = [
@@ -282,7 +291,6 @@
         ];
         csv += row.map(v => `"${(v != null ? v : '')}"`).join(',') + '\n';
       });
-
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -303,11 +311,12 @@
       } else {
         auditorData = data;
         renderTable(auditorData);
-        messageDiv.textContent = `📄 Loaded ${auditorData.length} records.`;
+        messageDiv.textContent = `📊 Loaded ${data.length} records from Supabase.`;
       }
     }
 
-    window.addEventListener('load', loadFromSupabase);
+    // Initial load
+    loadFromSupabase();
   </script>
 </body>
 </html>
