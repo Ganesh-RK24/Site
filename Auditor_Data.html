@@ -155,9 +155,8 @@
   </div>
 
   <script>
-    // Supabase init
-    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';  // ← replace
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';  // ← replace
+    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let auditorData = [];
@@ -221,90 +220,12 @@
           const csvText = e.target.result;
           const jsonData = csvToJson(csvText);
 
-          // Insert into Supabase table
           const { data, error } = await supabase
             .from('Auditor_Counted')
             .insert(jsonData);
 
           if (error) {
-            console.error('Upload error:', error);
-            messageDiv.textContent = '❌ Error uploading to Supabase.';
+            console.error(error);
+            messageDiv.textContent = '❌ Upload failed. Check your CSV fields and Supabase table.';
           } else {
-            messageDiv.textContent = `✅ Uploaded ${data.length} rows successfully.`;
-            // reload data
-            await loadFromSupabase();
-          }
-        } catch (err) {
-          console.error(err);
-          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
-        }
-      };
-      reader.readAsText(file);
-    });
-
-    filterBtn.addEventListener('click', () => {
-      const from = fromDate.value;
-      const to = toDate.value;
-      const wh = filterWarehouse.value;
-
-      let filtered = auditorData;
-
-      if (from) {
-        filtered = filtered.filter(r => r['Counted Date'] >= from);
-      }
-      if (to) {
-        filtered = filtered.filter(r => r['Counted Date'] <= to);
-      }
-      if (wh) {
-        filtered = filtered.filter(r => r['Warehouse No'] === wh);
-      }
-
-      renderTable(filtered);
-      messageDiv.textContent = `🔍 Showing ${filtered.length} records.`;
-    });
-
-    downloadBtn.addEventListener('click', () => {
-      if (!auditorData.length) {
-        alert('No data to download.');
-        return;
-      }
-      let csv = "Counted Date,Warehouse No,Auditor,Bin Code,Verified,Scanned Qty,Auditor Qty,Mismatch,Reverified,Reverified Phy Qty,Final Remarks\n";
-      auditorData.forEach(r => {
-        const row = [
-          r['Counted Date'], r['Warehouse No'], r['Auditor'], r['Bin Code'],
-          r['Verified'], r['Scanned Qty'], r['Auditor Qty'], r['Mismatch'],
-          r['Reverified'], r['Reverified Phy Qty'], r['Final Remarks']
-        ];
-        csv += row.map(v => `"${(v != null ? v : '')}"`).join(',') + '\n';
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'auditor_data.csv';
-      a.click();
-    });
-
-    async function loadFromSupabase() {
-      const { data, error } = await supabase
-        .from('Auditor_Counted')
-        .select('*')
-        .order('Counted Date', { ascending: false });
-
-      if (error) {
-        console.error('Fetch error:', error);
-        messageDiv.textContent = '❌ Error loading data from Supabase.';
-      } else {
-        auditorData = data;
-        renderTable(auditorData);
-        messageDiv.textContent = `📄 Loaded ${auditorData.length} records.`;
-      }
-    }
-
-    // On page load
-    window.addEventListener('load', () => {
-      loadFromSupabase();
-    });
-  </script>
-</body>
-</html>
+            messageDiv.textContent = `✅ Uploaded
