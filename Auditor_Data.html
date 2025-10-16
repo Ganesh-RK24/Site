@@ -101,6 +101,7 @@
     .message {
       margin-top: 15px;
       font-weight: 700;
+      color: #ff6b6b;
     }
   </style>
 </head>
@@ -111,7 +112,7 @@
     <div class="upload-section">
       <input type="file" id="fileInput" accept=".csv" />
       <button id="uploadBtn">Upload CSV</button>
-      <div class="message" id="message"></div> <!-- moved here -->
+      <div class="message" id="message"></div>
     </div>
 
     <div class="filter-section">
@@ -151,14 +152,11 @@
       </thead>
       <tbody></tbody>
     </table>
-
   </div>
 
   <script>
     const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
-
-    // Correct Supabase v2 initialization
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -174,39 +172,35 @@
     const downloadBtn = document.getElementById('downloadCsvBtn');
     const messageDiv = document.getElementById('message');
 
-    // Updated csvToJson to fix date format (DD-MM-YYYY → YYYY-MM-DD)
     function csvToJson(csv) {
       const lines = csv.trim().split('\n');
       const headers = lines[0].split(',').map(h => h.trim());
+
       return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
         const obj = {};
         headers.forEach((header, idx) => {
-          let val = values[idx] || '';
-          if (header === 'Counted Date' && val.includes('-')) {
-            const [d, m, y] = val.split('-');
-            if (d && m && y) {
-              val = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+          let value = values[idx] || '';
+          if (header === 'Counted Date' && value.includes('-')) {
+            const [d, m, y] = value.split('-');
+            if (d.length === 2 && m.length === 2 && y.length === 4) {
+              value = `${y}-${m}-${d}`;
             }
           }
-          obj[header] = val;
+          obj[header] = value;
         });
         return obj;
       });
     }
 
-    // Limit to show only 50 rows
     function renderTable(data) {
       dataTableBody.innerHTML = '';
-      const maxRows = 50;
-      const displayData = data.slice(0, maxRows);
-
-      if (!displayData.length) {
+      const limitedData = data.slice(0, 50);
+      if (!limitedData.length) {
         dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data to display</td></tr>';
         return;
       }
-
-      displayData.forEach(row => {
+      limitedData.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row['Counted Date'] || ''}</td>
@@ -223,10 +217,6 @@
         `;
         dataTableBody.appendChild(tr);
       });
-
-      if (data.length > maxRows) {
-        messageDiv.textContent += ` ⚠️ Showing only first ${maxRows} rows.`;
-      }
     }
 
     uploadBtn.addEventListener('click', async () => {
@@ -269,15 +259,9 @@
 
       let filtered = auditorData;
 
-      if (from) {
-        filtered = filtered.filter(r => r['Counted Date'] >= from);
-      }
-      if (to) {
-        filtered = filtered.filter(r => r['Counted Date'] <= to);
-      }
-      if (wh) {
-        filtered = filtered.filter(r => r['Warehouse No'] === wh);
-      }
+      if (from) filtered = filtered.filter(r => r['Counted Date'] >= from);
+      if (to) filtered = filtered.filter(r => r['Counted Date'] <= to);
+      if (wh) filtered = filtered.filter(r => r['Warehouse No'] === wh);
 
       renderTable(filtered);
       messageDiv.textContent = `🔍 Showing ${filtered.length} records.`;
@@ -288,6 +272,7 @@
         alert('No data to download.');
         return;
       }
+
       let csv = "Counted Date,Warehouse No,Auditor,Bin Code,Verified,Scanned Qty,Auditor Qty,Mismatch,Reverified,Reverified Phy Qty,Final Remarks\n";
       auditorData.forEach(r => {
         const row = [
@@ -297,6 +282,7 @@
         ];
         csv += row.map(v => `"${(v != null ? v : '')}"`).join(',') + '\n';
       });
+
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -321,9 +307,7 @@
       }
     }
 
-    window.addEventListener('load', () => {
-      loadFromSupabase();
-    });
+    window.addEventListener('load', loadFromSupabase);
   </script>
 </body>
 </html>
