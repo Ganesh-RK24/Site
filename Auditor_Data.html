@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Auditor Data</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
       margin: 0;
@@ -111,6 +111,7 @@
     <div class="upload-section">
       <input type="file" id="fileInput" accept=".csv" />
       <button id="uploadBtn">Upload CSV</button>
+      <div id="uploadMessage" class="message"></div>
     </div>
 
     <div class="filter-section">
@@ -155,12 +156,10 @@
   </div>
 
   <script>
+    // Supabase init
     const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
-
-    // ✅ Correct Supabase v2 initialization
-    const { createClient } = supabase;
-    const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let auditorData = [];
 
@@ -173,6 +172,7 @@
     const dataTableBody = document.querySelector('#dataTable tbody');
     const downloadBtn = document.getElementById('downloadCsvBtn');
     const messageDiv = document.getElementById('message');
+    const uploadMessage = document.getElementById('uploadMessage');
 
     function csvToJson(csv) {
       const lines = csv.trim().split('\n');
@@ -181,15 +181,16 @@
         const values = line.split(',').map(v => v.trim());
         const obj = {};
         headers.forEach((header, idx) => {
-          let value = values[idx] || '';
-          // Convert 'Counted Date' from DD-MM-YYYY to YYYY-MM-DD
-          if (header === 'Counted Date' && value.includes('-')) {
-            const parts = value.split('-');
-            if (parts.length === 3) {
-              value = `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
+          let val = values[idx] || '';
+          if(header === 'Counted Date' && val) {
+            // Convert DD-MM-YYYY or DD/MM/YYYY to YYYY-MM-DD for Supabase
+            const parts = val.includes('-') ? val.split('-') : val.split('/');
+            if(parts.length === 3) {
+              const [d,m,y] = parts;
+              val = `${y.padStart(4,'0')}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
             }
           }
-          obj[header] = value;
+          obj[header] = val;
         });
         return obj;
       });
@@ -221,12 +222,11 @@
     }
 
     uploadBtn.addEventListener('click', async () => {
-      messageDiv.textContent = '';
+      uploadMessage.textContent = '';
       if (!fileInput.files.length) {
-        messageDiv.textContent = '❌ Please select a CSV file.';
+        uploadMessage.textContent = '❌ Please select a CSV file.';
         return;
       }
-
       const file = fileInput.files[0];
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -234,20 +234,20 @@
           const csvText = e.target.result;
           const jsonData = csvToJson(csvText);
 
-          const { data, error } = await client
+          const { data, error } = await supabase
             .from('Auditor_Counted')
             .insert(jsonData);
 
           if (error) {
             console.error('Upload error:', error);
-            messageDiv.textContent = '❌ Error uploading to Supabase.';
+            uploadMessage.textContent = '❌ Error uploading to Supabase.';
           } else {
-            messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows successfully.`;
+            uploadMessage.textContent = `✅ Uploaded ${data.length} rows successfully.`;
             await loadFromSupabase();
           }
         } catch (err) {
           console.error(err);
-          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
+          uploadMessage.textContent = '❌ Error parsing/uploading CSV.';
         }
       };
       reader.readAsText(file);
@@ -297,7 +297,7 @@
     });
 
     async function loadFromSupabase() {
-      const { data, error } = await client
+      const { data, error } = await supabase
         .from('Auditor_Counted')
         .select('*')
         .order('Counted Date', { ascending: false });
@@ -318,4 +318,3 @@
   </script>
 </body>
 </html>
-
