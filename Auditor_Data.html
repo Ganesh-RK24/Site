@@ -14,62 +14,74 @@
       padding: 20px;
     }
     .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    h2 {
-      color: #4a90e2;
-      margin-bottom: 20px;
-    }
-    .section, .upload-section, .filter-section {
-      background: #1f1f1f;
+      max-width: 900px;
+      margin: 20px auto;
+      background: #121212;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 15px #4a90e2;
-      margin-bottom: 20px;
+      box-shadow: 0 0 15px #0b78e3;
+      color: white;
     }
-    input[type="file"], input[type="date"], select, input[type="number"], input[type="text"], button {
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      background-color: #333;
-      color: #eee;
-      width: 100%;
-      box-sizing: border-box;
+    .form-section {
+      background: #1e1e1e;
+      padding: 20px;
+      margin-bottom: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #0b78e3;
     }
-    input[type="file"]::-webkit-file-upload-button {
-      background: #4a90e2;
-      color: #fff;
-      border: none;
-      padding: 8px 14px;
-      cursor: pointer;
-      border-radius: 6px;
+    .form-title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #4895ef;
     }
-    input[type="file"]::-webkit-file-upload-button:hover {
-      background: #357ABD;
-    }
-    button {
-      background-color: #4a90e2;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #357ABD;
-    }
-    .row {
+    .form-row {
       display: flex;
-      gap: 20px;
+      gap: 15px;
+      margin-bottom: 15px;
       flex-wrap: wrap;
     }
-    .row > div {
-      flex: 1 1 48%;
+    .form-row > * {
+      flex: 1 1 0;
+      min-width: 150px;
     }
-    .row-full {
-      display: flex;
-      gap: 20px;
+    input, select, button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+      background-color: #2a2a2a;
+      color: white;
+      box-sizing: border-box;
+      box-shadow: inset 0 0 5px #333;
     }
-    .row-full > input {
-      flex: 1;
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      filter: brightness(1.1);
+    }
+    .btn-submit {
+      background-color: #2d74f5;
+      color: white;
+    }
+    .btn-upload {
+      background-color: #3b82f6;
+      color: white;
+      margin-top: 10px;
+    }
+    .btn-filter {
+      background-color: #3b82f6;
+      color: white;
+      margin-top: 10px;
+    }
+    .btn-download {
+      background-color: #22c55e;
+      color: white;
+      margin-top: 10px;
     }
     table {
       width: 100%;
@@ -78,6 +90,7 @@
       color: #eee;
       border-radius: 8px;
       overflow: hidden;
+      margin-top: 20px;
     }
     th, td {
       padding: 12px 15px;
@@ -90,91 +103,67 @@
     tr:hover {
       background-color: #333;
     }
-    .download-button {
-      margin: 15px 0;
-      background-color: #4caf50;
-      color: white;
-      font-weight: 700;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-    }
-    .download-button:hover {
-      background-color: #388e3c;
-    }
     .message {
-      margin-top: 10px;
+      margin-top: 15px;
       font-weight: 700;
       min-height: 24px;
+      color: #f44336;
+    }
+    .message.success {
+      color: #4caf50;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Auditor Data Upload & Reports</h2>
-
-    <!-- Manpower Data Entry Section -->
-    <div class="section">
-      <h3>🧑‍🔧 Manpower Data Entry</h3>
-      <div class="row">
-        <div><input type="date" id="mpDate" /></div>
-        <div>
-          <select id="mpWarehouse">
-            <option value="">Select Warehouse</option>
-            <option value="W501">W501</option>
-            <option value="W503">W503</option>
-            <option value="W504">W504</option>
-            <option value="W506">W506</option>
-            <option value="W509">W509</option>
-            <option value="W511">W511</option>
-            <option value="W512">W512</option>
-          </select>
-        </div>
+    <div class="form-section">
+      <div class="form-title">👨‍💼 Manpower Data Entry</div>
+      <div class="form-row">
+        <input type="date" id="mpDate" placeholder="dd-mm-yyyy" />
+        <select id="mpWarehouse">
+          <option value="">Select Warehouse</option>
+          <option value="W501">W501</option>
+          <option value="W503">W503</option>
+          <option value="W504">W504</option>
+          <option value="W506">W506</option>
+          <option value="W509">W509</option>
+          <option value="W511">W511</option>
+          <option value="W512">W512</option>
+        </select>
+        <select id="mpVendor">
+          <option value="">Select Vendor</option>
+          <option value="Matrix Business Services India Private Limited">Matrix Business Services India Private Limited</option>
+          <option value="PRO-Team Solution Pvt Ltd">PRO-Team Solution Pvt Ltd</option>
+        </select>
+        <input type="number" id="mpCount" placeholder="MP Count" />
       </div>
-      <div class="row">
-        <div>
-          <select id="mpVendor">
-            <option value="">Select Vendor</option>
-            <option value="Matrix Business Services India Private Limited">Matrix Business Services India Private Limited</option>
-            <option value="PRO-Team Solution Pvt Ltd">PRO-Team Solution Pvt Ltd</option>
-          </select>
-        </div>
-        <div><input type="number" id="mpCount" placeholder="MP Count" /></div>
-      </div>
-      <button id="submitMP">Submit Manpower Entry</button>
+      <button class="btn-submit" id="submitMP">Submit Manpower Entry</button>
       <div class="message" id="mpMessage"></div>
     </div>
 
-    <!-- Upload Section (Inline Inputs) -->
-    <div class="upload-section">
-      <div class="row-full">
-        <input type="file" id="fileInput" accept=".csv" />
-        <button id="uploadBtn">Upload CSV</button>
-      </div>
+    <div class="form-section">
+      <input type="file" id="fileInput" accept=".csv" />
+      <button class="btn-upload" id="uploadBtn">Upload CSV</button>
       <div class="message" id="message"></div>
     </div>
 
-    <!-- Filter and Table -->
-    <div class="filter-section">
-      <div class="row">
-        <div><input type="date" id="fromDate" placeholder="From Date" /></div>
-        <div><input type="date" id="toDate" placeholder="To Date" /></div>
-        <div>
-          <select id="filterWarehouse">
-            <option value="">All Warehouses</option>
-            <option value="W501">W501</option>
-            <option value="W503">W503</option>
-            <option value="W504">W504</option>
-            <option value="W506">W506</option>
-            <option value="W509">W509</option>
-            <option value="W511">W511</option>
-            <option value="W512">W512</option>
-          </select>
-        </div>
+    <div class="form-section">
+      <div class="form-row">
+        <input type="date" id="fromDate" placeholder="dd-mm-yyyy" />
+        <input type="date" id="toDate" placeholder="dd-mm-yyyy" />
+        <select id="filterWarehouse">
+          <option value="">All Warehouses</option>
+          <option value="W501">W501</option>
+          <option value="W503">W503</option>
+          <option value="W504">W504</option>
+          <option value="W506">W506</option>
+          <option value="W509">W509</option>
+          <option value="W511">W511</option>
+          <option value="W512">W512</option>
+        </select>
       </div>
-      <button id="filterBtn">Filter</button>
-      <button class="download-button" id="downloadCsvBtn">Download CSV</button>
+      <button class="btn-filter" id="filterBtn">Filter</button>
+      <button class="btn-download" id="downloadCsvBtn">Download CSV</button>
     </div>
 
     <table id="dataTable">
@@ -204,42 +193,49 @@
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let auditorData = [];
+
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const filterBtn = document.getElementById('filterBtn');
+    const fromDate = document.getElementById('fromDate');
+    const toDate = document.getElementById('toDate');
+    const filterWarehouse = document.getElementById('filterWarehouse');
+    const dataTableBody = document.querySelector('#dataTable tbody');
+    const downloadBtn = document.getElementById('downloadCsvBtn');
+    const messageDiv = document.getElementById('message');
+
+    // Manpower Elements
     const mpDate = document.getElementById('mpDate');
     const mpWarehouse = document.getElementById('mpWarehouse');
     const mpVendor = document.getElementById('mpVendor');
     const mpCount = document.getElementById('mpCount');
     const submitMP = document.getElementById('submitMP');
     const mpMessage = document.getElementById('mpMessage');
-    const fileInput = document.getElementById('fileInput');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const messageDiv = document.getElementById('message');
-    const fromDate = document.getElementById('fromDate');
-    const toDate = document.getElementById('toDate');
-    const filterWarehouse = document.getElementById('filterWarehouse');
-    const filterBtn = document.getElementById('filterBtn');
-    const downloadBtn = document.getElementById('downloadCsvBtn');
-    const dataTableBody = document.querySelector('#dataTable tbody');
 
-    let auditorData = [];
-
+    // Handle Manpower Submit
     submitMP.addEventListener('click', async () => {
       mpMessage.textContent = '';
+      mpMessage.className = 'message';
       if (!mpDate.value || !mpWarehouse.value || !mpVendor.value || !mpCount.value) {
         mpMessage.style.color = '#f44336';
         mpMessage.textContent = '❌ Please fill all fields.';
         return;
       }
 
-      const { error } = await client.from('Manpower_Data').insert([{
-        Date: mpDate.value,
-        "Warehouse No": mpWarehouse.value,
-        Vendor: mpVendor.value,
-        "MP Count": parseInt(mpCount.value)
-      }]);
+      const { error } = await client
+        .from('Manpower_Data')
+        .insert([{
+          Date: mpDate.value,
+          "Warehouse No": mpWarehouse.value,
+          Vendor: mpVendor.value,
+          "MP Count": parseInt(mpCount.value)
+        }]);
 
       if (error) {
         mpMessage.style.color = '#f44336';
         mpMessage.textContent = `❌ Failed to submit: ${error.message}`;
+        console.error(error);
       } else {
         mpMessage.style.color = '#4caf50';
         mpMessage.textContent = '✅ Manpower data submitted successfully!';
@@ -248,40 +244,6 @@
         mpVendor.value = '';
         mpCount.value = '';
       }
-    });
-
-    uploadBtn.addEventListener('click', async () => {
-      messageDiv.textContent = '';
-      if (!fileInput.files.length) {
-        messageDiv.style.color = '#f44336';
-        messageDiv.textContent = '❌ Please select a CSV file.';
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          let csvText = e.target.result;
-          let jsonData = csvToJson(csvText);
-          jsonData = normalizeDateFields(jsonData);
-
-          const { error } = await client.from('Auditor_Counted').insert(jsonData);
-
-          if (error) {
-            messageDiv.style.color = '#f44336';
-            messageDiv.textContent = `❌ Upload failed: ${error.message}`;
-          } else {
-            messageDiv.style.color = '#4caf50';
-            messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows.`;
-            loadFromSupabase();
-          }
-        } catch (err) {
-          messageDiv.style.color = '#f44336';
-          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
-        }
-      };
-      reader.readAsText(file);
     });
 
     function csvToJson(csv) {
@@ -295,22 +257,22 @@
       });
     }
 
-    function normalizeDateFields(dataArray) {
-      return dataArray.map(item => {
-        if (item['Counted Date']) item['Counted Date'] = formatDateToISO(item['Counted Date']);
-        return item;
-      });
-    }
-
     function formatDateToISO(dateStr) {
       if (!dateStr) return '';
       const parts = dateStr.includes('-') ? dateStr.split('-') : dateStr.split('/');
       if (parts.length === 3) {
         if (parts[0].length === 4) return dateStr;
         const [dd, mm, yyyy] = parts;
-        return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+        return `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
       }
       return dateStr;
+    }
+
+    function normalizeDateFields(dataArray) {
+      return dataArray.map(item => {
+        if (item['Counted Date']) item['Counted Date'] = formatDateToISO(item['Counted Date']);
+        return item;
+      });
     }
 
     function renderTable(data) {
@@ -338,6 +300,42 @@
       });
     }
 
+    uploadBtn.addEventListener('click', async () => {
+      messageDiv.textContent = '';
+      messageDiv.className = 'message';
+      if (!fileInput.files.length) {
+        messageDiv.style.color = '#f44336';
+        messageDiv.textContent = '❌ Please select a CSV file.';
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          let csvText = e.target.result;
+          let jsonData = csvToJson(csvText);
+          jsonData = normalizeDateFields(jsonData);
+
+          const { error } = await client.from('Auditor_Counted').insert(jsonData);
+
+          if (error) {
+            messageDiv.style.color = '#f44336';
+            messageDiv.textContent = `❌ Upload failed: ${error.message}`;
+            console.error(error);
+          } else {
+            messageDiv.style.color = '#4caf50';
+            messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows.`;
+            loadFromSupabase();
+          }
+        } catch (err) {
+          messageDiv.style.color = '#f44336';
+          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
+        }
+      };
+      reader.readAsText(file);
+    });
+
     filterBtn.addEventListener('click', () => {
       let filtered = [...auditorData];
       if (fromDate.value) filtered = filtered.filter(r => r['Counted Date'] >= fromDate.value);
@@ -347,17 +345,30 @@
     });
 
     downloadBtn.addEventListener('click', () => {
-      if (!auditorData.length) return alert('No data to download.');
-      const headers = Object.keys(auditorData[0]);
-      const csvRows = [
-        headers.join(','),
-        ...auditorData.map(row => headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(','))
-      ];
-      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+      let filtered = [...auditorData];
+      if (fromDate.value) filtered = filtered.filter(r => r['Counted Date'] >= fromDate.value);
+      if (toDate.value) filtered = filtered.filter(r => r['Counted Date'] <= toDate.value);
+      if (filterWarehouse.value) filtered = filtered.filter(r => r['Warehouse No'] === filterWarehouse.value);
+
+      if (!filtered.length) {
+        alert('No data to download');
+        return;
+      }
+
+      const headers = ['Counted Date','Warehouse No','Auditor','Bin Code','Verified','Scanned Qty','Auditor Qty','Mismatch','Reverified','Reverified Phy Qty','Final Remarks'];
+      const csvRows = [];
+      csvRows.push(headers.join(','));
+      filtered.forEach(row => {
+        const vals = headers.map(h => `"${(row[h] || '').toString().replace(/"/g,'""')}"`);
+        csvRows.push(vals.join(','));
+      });
+      const csvString = csvRows.join('\n');
+
+      const blob = new Blob([csvString], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `auditor_data_${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = 'auditor_data.csv';
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -367,11 +378,19 @@
         .from('Auditor_Counted')
         .select('*')
         .order('Counted Date', { ascending: false })
-        .limit(100);
-      if (!error) {
-        auditorData = data || [];
-        renderTable(auditorData);
+        .limit(200);
+
+      if (error) {
+        messageDiv.style.color = '#f44336';
+        messageDiv.textContent = `❌ Failed to load data: ${error.message}`;
+        console.error(error);
+        return;
       }
+      auditorData = data.map(item => {
+        if (item['Counted Date']) item['Counted Date'] = item['Counted Date'].slice(0,10);
+        return item;
+      });
+      renderTable(auditorData);
     }
 
     loadFromSupabase();
