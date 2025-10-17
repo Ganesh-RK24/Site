@@ -21,7 +21,7 @@
       color: #4a90e2;
       margin-bottom: 20px;
     }
-    .upload-section, .filter-section, .section {
+    .section, .upload-section, .filter-section {
       background: #1f1f1f;
       padding: 20px;
       border-radius: 10px;
@@ -30,7 +30,6 @@
     }
     input[type="file"], input[type="date"], select, input[type="number"], input[type="text"], button {
       padding: 10px;
-      margin: 10px 0 15px 0;
       border-radius: 6px;
       border: none;
       background-color: #333;
@@ -57,14 +56,20 @@
     button:hover {
       background-color: #357ABD;
     }
-    .filter-row {
+    .row {
       display: flex;
-      gap: 15px;
+      gap: 20px;
       flex-wrap: wrap;
-      margin-bottom: 20px;
     }
-    .filter-row > * {
-      flex: 1 1 150px;
+    .row > div {
+      flex: 1 1 48%;
+    }
+    .row-full {
+      display: flex;
+      gap: 20px;
+    }
+    .row-full > input {
+      flex: 1;
     }
     table {
       width: 100%;
@@ -99,7 +104,7 @@
       background-color: #388e3c;
     }
     .message {
-      margin-top: 15px;
+      margin-top: 10px;
       font-weight: 700;
       min-height: 24px;
     }
@@ -112,48 +117,61 @@
     <!-- Manpower Data Entry Section -->
     <div class="section">
       <h3>🧑‍🔧 Manpower Data Entry</h3>
-      <input type="date" id="mpDate" />
-      <select id="mpWarehouse">
-        <option value="">Select Warehouse</option>
-        <option value="W501">W501</option>
-        <option value="W503">W503</option>
-        <option value="W504">W504</option>
-        <option value="W506">W506</option>
-        <option value="W509">W509</option>
-        <option value="W511">W511</option>
-        <option value="W512">W512</option>
-      </select>
-      <select id="mpVendor">
-        <option value="">Select Vendor</option>
-        <option value="Matrix Business Services India Private Limited">Matrix Business Services India Private Limited</option>
-        <option value="PRO-Team Solution Pvt Ltd">PRO-Team Solution Pvt Ltd</option>
-      </select>
-      <input type="number" id="mpCount" placeholder="MP Count" />
+      <div class="row">
+        <div><input type="date" id="mpDate" /></div>
+        <div>
+          <select id="mpWarehouse">
+            <option value="">Select Warehouse</option>
+            <option value="W501">W501</option>
+            <option value="W503">W503</option>
+            <option value="W504">W504</option>
+            <option value="W506">W506</option>
+            <option value="W509">W509</option>
+            <option value="W511">W511</option>
+            <option value="W512">W512</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <select id="mpVendor">
+            <option value="">Select Vendor</option>
+            <option value="Matrix Business Services India Private Limited">Matrix Business Services India Private Limited</option>
+            <option value="PRO-Team Solution Pvt Ltd">PRO-Team Solution Pvt Ltd</option>
+          </select>
+        </div>
+        <div><input type="number" id="mpCount" placeholder="MP Count" /></div>
+      </div>
       <button id="submitMP">Submit Manpower Entry</button>
       <div class="message" id="mpMessage"></div>
     </div>
 
-    <!-- Existing Upload Section -->
+    <!-- Upload Section (Inline Inputs) -->
     <div class="upload-section">
-      <input type="file" id="fileInput" accept=".csv" />
-      <button id="uploadBtn">Upload CSV</button>
+      <div class="row-full">
+        <input type="file" id="fileInput" accept=".csv" />
+        <button id="uploadBtn">Upload CSV</button>
+      </div>
       <div class="message" id="message"></div>
     </div>
 
+    <!-- Filter and Table -->
     <div class="filter-section">
-      <div class="filter-row">
-        <input type="date" id="fromDate" placeholder="From Date" />
-        <input type="date" id="toDate" placeholder="To Date" />
-        <select id="filterWarehouse">
-          <option value="">All Warehouses</option>
-          <option value="W501">W501</option>
-          <option value="W503">W503</option>
-          <option value="W504">W504</option>
-          <option value="W506">W506</option>
-          <option value="W509">W509</option>
-          <option value="W511">W511</option>
-          <option value="W512">W512</option>
-        </select>
+      <div class="row">
+        <div><input type="date" id="fromDate" placeholder="From Date" /></div>
+        <div><input type="date" id="toDate" placeholder="To Date" /></div>
+        <div>
+          <select id="filterWarehouse">
+            <option value="">All Warehouses</option>
+            <option value="W501">W501</option>
+            <option value="W503">W503</option>
+            <option value="W504">W504</option>
+            <option value="W506">W506</option>
+            <option value="W509">W509</option>
+            <option value="W511">W511</option>
+            <option value="W512">W512</option>
+          </select>
+        </div>
       </div>
       <button id="filterBtn">Filter</button>
       <button class="download-button" id="downloadCsvBtn">Download CSV</button>
@@ -186,27 +204,24 @@
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let auditorData = [];
-
-    const fileInput = document.getElementById('fileInput');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const filterBtn = document.getElementById('filterBtn');
-    const fromDate = document.getElementById('fromDate');
-    const toDate = document.getElementById('toDate');
-    const filterWarehouse = document.getElementById('filterWarehouse');
-    const dataTableBody = document.querySelector('#dataTable tbody');
-    const downloadBtn = document.getElementById('downloadCsvBtn');
-    const messageDiv = document.getElementById('message');
-
-    // Manpower Elements
     const mpDate = document.getElementById('mpDate');
     const mpWarehouse = document.getElementById('mpWarehouse');
     const mpVendor = document.getElementById('mpVendor');
     const mpCount = document.getElementById('mpCount');
     const submitMP = document.getElementById('submitMP');
     const mpMessage = document.getElementById('mpMessage');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const messageDiv = document.getElementById('message');
+    const fromDate = document.getElementById('fromDate');
+    const toDate = document.getElementById('toDate');
+    const filterWarehouse = document.getElementById('filterWarehouse');
+    const filterBtn = document.getElementById('filterBtn');
+    const downloadBtn = document.getElementById('downloadCsvBtn');
+    const dataTableBody = document.querySelector('#dataTable tbody');
 
-    // Handle Manpower Submit
+    let auditorData = [];
+
     submitMP.addEventListener('click', async () => {
       mpMessage.textContent = '';
       if (!mpDate.value || !mpWarehouse.value || !mpVendor.value || !mpCount.value) {
@@ -215,19 +230,16 @@
         return;
       }
 
-      const { error } = await client
-        .from('Manpower_Data')
-        .insert([{
-          Date: mpDate.value,
-          "Warehouse No": mpWarehouse.value,
-          Vendor: mpVendor.value,
-          "MP Count": parseInt(mpCount.value)
-        }]);
+      const { error } = await client.from('Manpower_Data').insert([{
+        Date: mpDate.value,
+        "Warehouse No": mpWarehouse.value,
+        Vendor: mpVendor.value,
+        "MP Count": parseInt(mpCount.value)
+      }]);
 
       if (error) {
         mpMessage.style.color = '#f44336';
         mpMessage.textContent = `❌ Failed to submit: ${error.message}`;
-        console.error(error);
       } else {
         mpMessage.style.color = '#4caf50';
         mpMessage.textContent = '✅ Manpower data submitted successfully!';
@@ -238,7 +250,39 @@
       }
     });
 
-    // CSV-to-JSON and Auditor Uploading Logic (unchanged)...
+    uploadBtn.addEventListener('click', async () => {
+      messageDiv.textContent = '';
+      if (!fileInput.files.length) {
+        messageDiv.style.color = '#f44336';
+        messageDiv.textContent = '❌ Please select a CSV file.';
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          let csvText = e.target.result;
+          let jsonData = csvToJson(csvText);
+          jsonData = normalizeDateFields(jsonData);
+
+          const { error } = await client.from('Auditor_Counted').insert(jsonData);
+
+          if (error) {
+            messageDiv.style.color = '#f44336';
+            messageDiv.textContent = `❌ Upload failed: ${error.message}`;
+          } else {
+            messageDiv.style.color = '#4caf50';
+            messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows.`;
+            loadFromSupabase();
+          }
+        } catch (err) {
+          messageDiv.style.color = '#f44336';
+          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
+        }
+      };
+      reader.readAsText(file);
+    });
 
     function csvToJson(csv) {
       const lines = csv.trim().split('\n');
@@ -251,22 +295,22 @@
       });
     }
 
+    function normalizeDateFields(dataArray) {
+      return dataArray.map(item => {
+        if (item['Counted Date']) item['Counted Date'] = formatDateToISO(item['Counted Date']);
+        return item;
+      });
+    }
+
     function formatDateToISO(dateStr) {
       if (!dateStr) return '';
       const parts = dateStr.includes('-') ? dateStr.split('-') : dateStr.split('/');
       if (parts.length === 3) {
         if (parts[0].length === 4) return dateStr;
         const [dd, mm, yyyy] = parts;
-        return `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+        return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
       }
       return dateStr;
-    }
-
-    function normalizeDateFields(dataArray) {
-      return dataArray.map(item => {
-        if (item['Counted Date']) item['Counted Date'] = formatDateToISO(item['Counted Date']);
-        return item;
-      });
     }
 
     function renderTable(data) {
@@ -293,41 +337,6 @@
         dataTableBody.appendChild(tr);
       });
     }
-
-    uploadBtn.addEventListener('click', async () => {
-      messageDiv.textContent = '';
-      if (!fileInput.files.length) {
-        messageDiv.style.color = '#f44336';
-        messageDiv.textContent = '❌ Please select a CSV file.';
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          let csvText = e.target.result;
-          let jsonData = csvToJson(csvText);
-          jsonData = normalizeDateFields(jsonData);
-
-          const { error } = await client.from('Auditor_Counted').insert(jsonData);
-
-          if (error) {
-            messageDiv.style.color = '#f44336';
-            messageDiv.textContent = `❌ Upload failed: ${error.message}`;
-            console.error(error);
-          } else {
-            messageDiv.style.color = '#4caf50';
-            messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows.`;
-            loadFromSupabase();
-          }
-        } catch (err) {
-          messageDiv.style.color = '#f44336';
-          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
-        }
-      };
-      reader.readAsText(file);
-    });
 
     filterBtn.addEventListener('click', () => {
       let filtered = [...auditorData];
@@ -359,14 +368,12 @@
         .select('*')
         .order('Counted Date', { ascending: false })
         .limit(100);
-
       if (!error) {
         auditorData = data || [];
         renderTable(auditorData);
       }
     }
 
-    // Load initial data
     loadFromSupabase();
   </script>
 </body>
