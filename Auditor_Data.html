@@ -119,6 +119,29 @@
     .download-button:hover {
       background-color: #388e3c;
     }
+
+    .pagination {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .pagination button {
+      background-color: #4a90e2;
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .pagination button:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+    }
+
   </style>
 </head>
 <body>
@@ -153,7 +176,6 @@
 
     <!-- Upload Section -->
     <div class="upload-section">
-      <h3>📤Please Upload Counted Data ⬆️</h3>
       <div class="form-row">
         <input type="file" id="fileInput" accept=".csv" />
         <button id="uploadBtn">📤 Upload CSV</button>
@@ -177,9 +199,9 @@
           <option value="W512">W512</option>
         </select>
       </div>
-      <div class="form-row">
-        <button id="filterBtn">Filter</button>
-        <button class="download-button" id="downloadCsvBtn">Download CSV</button>
+      <div class="form-row" style="gap: 15px;">
+        <button id="filterBtn" style="flex:1 1 auto;">Filter</button>
+        <button class="download-button" id="downloadCsvBtn" style="flex:1 1 auto;">Download CSV</button>
       </div>
     </div>
 
@@ -201,6 +223,8 @@
       </thead>
       <tbody></tbody>
     </table>
+
+    <div class="pagination" id="pagination"></div>
   </div>
 
   <script>
@@ -209,7 +233,11 @@
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Pagination and data tracking
     let auditorData = [];
+    let currentPage = 1;
+    const pageSize = 100;
+    let totalRows = 0;
 
     const mpDate = document.getElementById('mpDate');
     const mpWarehouse = document.getElementById('mpWarehouse');
@@ -257,6 +285,7 @@
     const filterBtn = document.getElementById('filterBtn');
     const downloadBtn = document.getElementById('downloadCsvBtn');
     const dataTableBody = document.querySelector('#dataTable tbody');
+    const paginationDiv = document.getElementById('pagination');
 
     uploadBtn.addEventListener('click', async () => {
       messageDiv.textContent = '';
@@ -282,7 +311,7 @@
           } else {
             messageDiv.style.color = '#4caf50';
             messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows.`;
-            loadFromSupabase();
+            loadFromSupabase(1);
           }
         } catch (err) {
           messageDiv.style.color = '#f44336';
@@ -323,6 +352,7 @@
       return dateStr;
     }
 
+    // Render table rows
     function renderTable(data) {
       dataTableBody.innerHTML = '';
       if (!data.length) {
@@ -330,7 +360,7 @@
         return;
       }
 
-      data.slice(0, 50).forEach(row => {
+      data.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row['Counted Date'] || ''}</td>
@@ -349,50 +379,157 @@
       });
     }
 
+    // Pagination buttons render
+    function renderPagination(totalPages) {
+      paginationDiv.innerHTML = '';
+
+      if (totalPages <= 1) return;
+
+      // Prev button
+      const prevBtn = document.createElement('button');
+      prevBtn.textContent = 'Previous';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          loadFromSupabase(currentPage);
+        }
+      });
+      paginationDiv.appendChild(prevBtn);
+
+      // Page number buttons (limited)
+      const maxPagesToShow = 7;
+      let startPage = Math.max(1, currentPage - 3);
+      let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+      if (endPage - startPage < maxPagesToShow - 1) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        if (i === currentPage) {
+          pageBtn.style.backgroundColor = '#357ABD';
+          pageBtn.disabled = true;
+        }
+        pageBtn.addEventListener('click', () => {
+          currentPage = i;
+          loadFromSupabase(currentPage);
+        });
+        paginationDiv.appendChild(pageBtn);
+      }
+
+      // Next button
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = 'Next';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          loadFromSupabase(currentPage);
+        }
+      });
+      paginationDiv.appendChild(nextBtn);
+    }
+
+    // Load data from supabase with filters & pagination
+    async function loadFromSupabase(page = 1) {
+      currentPage = page;
+      const from = (page - 1) * pageSize;
+
+      let query = client
+        .from('Auditor_Counted')
+        .select('*', { count: 'exact' })
+        .order('Counted Date', { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (fromDate.value) query = query.gte('Counted Date', fromDate.value);
+      if (toDate.value) query = query.lte('Counted Date', toDate.value);
+      if (filterWarehouse.value) query = query.eq('Warehouse No', filterWarehouse.value);
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        dataTableBody.innerHTML = `<tr><td colspan="11" style="color: #f44336;">Error loading data: ${error.message}</td></tr>`;
+        paginationDiv.innerHTML = '';
+        return;
+      }
+
+      auditorData = data || [];
+      totalRows = count || 0;
+      renderTable(auditorData);
+      renderPagination(Math.ceil(totalRows / pageSize));
+    }
+
+    // Filter button event - load filtered data from Supabase page 1
     filterBtn.addEventListener('click', () => {
-      let filtered = [...auditorData];
-      if (fromDate.value) filtered = filtered.filter(r => r['Counted Date'] >= fromDate.value);
-      if (toDate.value) filtered = filtered.filter(r => r['Counted Date'] <= toDate.value);
-      if (filterWarehouse.value) filtered = filtered.filter(r => r['Warehouse No'] === filterWarehouse.value);
-      renderTable(filtered);
+      loadFromSupabase(1);
     });
 
-    downloadBtn.addEventListener('click', () => {
-      if (!auditorData.length) return alert('No data to download.');
-      const headers = Object.keys(auditorData[0]);
+    // Download button fetches full filtered data from Supabase (no paging) and downloads CSV
+    downloadBtn.addEventListener('click', async () => {
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = 'Downloading...';
+
+      let query = client
+        .from('Auditor_Counted')
+        .select('*')
+        .order('Counted Date', { ascending: false });
+
+      if (fromDate.value) query = query.gte('Counted Date', fromDate.value);
+      if (toDate.value) query = query.lte('Counted Date', toDate.value);
+      if (filterWarehouse.value) query = query.eq('Warehouse No', filterWarehouse.value);
+
+      // Supabase limits 1000 rows per request, so we page internally
+      let allData = [];
+      let from = 0;
+      const batchSize = 1000;
+      while (true) {
+        const { data, error } = await query.range(from, from + batchSize - 1);
+        if (error) {
+          alert('Download failed: ' + error.message);
+          break;
+        }
+        if (!data || data.length === 0) break;
+
+        allData = allData.concat(data);
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
+
+      if (allData.length === 0) {
+        alert('No data found for the selected filters.');
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = 'Download CSV';
+        return;
+      }
+
+      // Convert to CSV string
+      const headers = Object.keys(allData[0]);
       const csvRows = [
         headers.join(','),
-        ...auditorData.map(row => headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(','))
+        ...allData.map(row => headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(','))
       ];
-      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+      const csvContent = csvRows.join('\n');
+
+      // Download CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `auditor_data_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      downloadBtn.disabled = false;
+      downloadBtn.textContent = 'Download CSV';
     });
 
-    async function loadFromSupabase() {
-      const { data, error } = await client
-        .from('Auditor_Counted')
-        .select('*')
-        .order('Counted Date', { ascending: false })
-        .limit(100);
-
-      if (!error) {
-        auditorData = data || [];
-        renderTable(auditorData);
-      }
-    }
-
     // Load initial data
-    loadFromSupabase();
+    loadFromSupabase(1);
   </script>
 </body>
 </html>
-
-
-
-
-
