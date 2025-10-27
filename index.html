@@ -6,110 +6,202 @@
   <title>Login / Register</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .box { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); width: 350px; text-align: center; }
-    .box h2 { margin-bottom: 20px; color: #333; }
-    .box input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; }
-    .box button { width: 100%; padding: 10px; background: #3498db; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
-    .box button:hover { background: #2980b9; }
-    .error { color: red; margin-top: 12px; }
-    .toggle-link { color: #3498db; cursor: pointer; margin-top: 10px; display: inline-block; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 50px;
+      margin: 0;
+    }
+    .box {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      width: 350px;
+      text-align: center;
+      margin: 10px;
+    }
+    .box h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .box input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .box button {
+      width: 100%;
+      padding: 10px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .box button:hover {
+      background: #2980b9;
+    }
+    .error, .success {
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    .error { color: red; }
+    .success { color: green; }
+    .link-btn { background: none; border: none; color: #3498db; cursor: pointer; text-decoration: underline; margin-top: 8px; }
   </style>
 </head>
 <body>
 
+<!-- LOGIN BOX -->
 <div class="box" id="login-box">
   <h2>Login</h2>
   <input type="email" id="login-email" placeholder="Email Id" required />
   <input type="password" id="login-password" placeholder="Password" required />
   <button onclick="login()">Login</button>
   <div class="error" id="login-error"></div>
-  <div class="toggle-link" onclick="showRegister()">Don't have an account? Register</div>
-  <div class="toggle-link" onclick="showForgot()">Forgot Password?</div>
+  <button class="link-btn" onclick="showRegister()">Register</button>
+  <button class="link-btn" onclick="showForgot()">Forgot Password?</button>
 </div>
 
+<!-- REGISTER BOX -->
 <div class="box" id="register-box" style="display:none;">
   <h2>Register</h2>
   <input type="text" id="reg-username" placeholder="User Name" required />
   <input type="email" id="reg-email" placeholder="Email Id" required />
   <input type="password" id="reg-password" placeholder="Password" required />
-  <button onclick="register()">Request Account</button>
+  <button onclick="register()">Submit Registration</button>
+  <div class="success" id="reg-success"></div>
   <div class="error" id="reg-error"></div>
-  <div class="toggle-link" onclick="showLogin()">Back to Login</div>
+  <button class="link-btn" onclick="showLogin()">Back to Login</button>
 </div>
 
+<!-- FORGOT PASSWORD BOX -->
 <div class="box" id="forgot-box" style="display:none;">
   <h2>Forgot Password</h2>
-  <input type="email" id="forgot-email" placeholder="Enter your Email" required />
-  <button onclick="forgotPassword()">Submit</button>
+  <input type="email" id="forgot-email" placeholder="Email Id" required />
+  <button onclick="forgotPassword()">Reset Password</button>
+  <div class="success" id="forgot-success"></div>
   <div class="error" id="forgot-error"></div>
-  <div class="toggle-link" onclick="showLogin()">Back to Login</div>
+  <button class="link-btn" onclick="showLogin()">Back to Login</button>
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+const SUPABASE_KEY = 'YOUR_SUPABASE_KEY';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // Toggle UI
-  function showRegister(){ document.getElementById('login-box').style.display='none'; document.getElementById('register-box').style.display='block'; document.getElementById('forgot-box').style.display='none'; }
-  function showLogin(){ document.getElementById('login-box').style.display='block'; document.getElementById('register-box').style.display='none'; document.getElementById('forgot-box').style.display='none'; }
-  function showForgot(){ document.getElementById('login-box').style.display='none'; document.getElementById('register-box').style.display='none'; document.getElementById('forgot-box').style.display='block'; }
+// --- UI Functions ---
+function showRegister(){
+  document.getElementById('login-box').style.display='none';
+  document.getElementById('register-box').style.display='block';
+  document.getElementById('forgot-box').style.display='none';
+}
+function showLogin(){
+  document.getElementById('login-box').style.display='block';
+  document.getElementById('register-box').style.display='none';
+  document.getElementById('forgot-box').style.display='none';
+}
+function showForgot(){
+  document.getElementById('login-box').style.display='none';
+  document.getElementById('register-box').style.display='none';
+  document.getElementById('forgot-box').style.display='block';
+}
 
-  // LOGIN
-  async function login(){
-    const errorEl = document.getElementById('login-error');
-    errorEl.textContent = '';
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value.trim();
-    if(!email||!password){ errorEl.textContent='Please enter both email and password.'; return; }
+// --- LOGIN ---
+async function login(){
+  const errorEl = document.getElementById('login-error');
+  errorEl.textContent='';
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  if(!email || !password){ errorEl.textContent='Enter email & password.'; return; }
 
+  try{
+    const { data, error } = await supabase
+      .from('Login Credientials')
+      .select('"User Name","Email Id",Password,Role')
+      .eq('Email Id', email)
+      .single();
+    if(error){ throw error; }
+    if(!data || data.Password !== password){
+      errorEl.textContent='Invalid credentials.'; return;
+    }
+    // Save user and redirect
+    localStorage.setItem('loggedInUser', JSON.stringify({
+      username: data['User Name'], email: data['Email Id'], role: data.Role
+    }));
+    window.location.href='dashboard.html';
+  }catch(err){
+    // Check if user is pending approval
     try{
-      const { data, error } = await supabase.from('Login Credientials').select('"User Name","Email Id",Password,Role').eq('Email Id',email).single();
-      if(!data || error){
-        // Check if pending
-        const { data: pendingData } = await supabase.from('User_Requests').select('status').eq('email',email).single();
-        if(pendingData && pendingData.status==='pending'){ errorEl.textContent='Account pending approval. Please wait for admin.'; } 
-        else{ errorEl.textContent='Invalid credentials or user not found.'; }
+      const { data } = await supabase
+        .from('User_Requests')
+        .select('*')
+        .eq('email', email)
+        .single();
+      if(data && data.status==='pending'){
+        errorEl.textContent='Approval Pending. Admin will approve your account.';
+        return;
+      } else if(data && data.status==='reset_pending'){
+        errorEl.textContent='Password reset requested. Admin will update your password.';
         return;
       }
-      if(data.Password !== password){ errorEl.textContent='Invalid credentials.'; return; }
-
-      localStorage.setItem('loggedInUser', JSON.stringify({ username:data['User Name'], email:data['Email Id'], role:data.Role }));
-      window.location.href='dashboard.html';
-    } catch(err){ console.error(err); errorEl.textContent='Something went wrong. Try again.'; }
+    }catch(e){}
+    console.error(err);
+    errorEl.textContent='Something went wrong. Try again.';
   }
+}
 
-  // REGISTER
-  async function register(){
-    const errorEl = document.getElementById('reg-error');
-    errorEl.textContent = '';
-    const username=document.getElementById('reg-username').value.trim();
-    const email=document.getElementById('reg-email').value.trim();
-    const password=document.getElementById('reg-password').value.trim();
-    if(!username||!email||!password){ errorEl.textContent='All fields are required.'; return; }
+// --- REGISTER ---
+async function register(){
+  const username=document.getElementById('reg-username').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const password=document.getElementById('reg-password').value.trim();
+  const successEl=document.getElementById('reg-success');
+  const errorEl=document.getElementById('reg-error');
+  successEl.textContent=''; errorEl.textContent='';
 
-    try{
-      const { data, error } = await supabase.from('User_Requests').insert([{ user_name: username, email: email, password: password, status: 'pending' }]);
-      if(error){ errorEl.textContent='Could not submit request. Maybe email already exists.'; return; }
-      alert('Request submitted. Admin will approve your account.');
-      showLogin();
-    } catch(err){ console.error(err); errorEl.textContent='Something went wrong.'; }
+  if(!username||!email||!password){ errorEl.textContent='All fields are required.'; return; }
+
+  try{
+    // Insert into pending requests
+    const { data, error } = await supabase
+      .from('User_Requests')
+      .insert([{ user_name: username, email, password, status:'pending' }]);
+    if(error){ throw error; }
+    successEl.textContent='Registration submitted! Admin approval required.';
+  }catch(err){
+    console.error(err);
+    errorEl.textContent='Registration failed. Try again.';
   }
+}
 
-  // FORGOT PASSWORD
-  async function forgotPassword(){
-    const errorEl=document.getElementById('forgot-error');
-    errorEl.textContent='';
-    const email=document.getElementById('forgot-email').value.trim();
-    if(!email){ errorEl.textContent='Enter your email.'; return; }
-    try{
-      const { data, error } = await supabase.from('User_Requests').insert([{ email: email, status: 'reset_pending' }]);
-      if(error){ errorEl.textContent='Could not submit request.'; return; }
-      alert('Password reset request submitted. Admin will process it.');
-      showLogin();
-    } catch(err){ console.error(err); errorEl.textContent='Something went wrong.'; }
+// --- FORGOT PASSWORD ---
+async function forgotPassword(){
+  const email=document.getElementById('forgot-email').value.trim();
+  const successEl=document.getElementById('forgot-success');
+  const errorEl=document.getElementById('forgot-error');
+  successEl.textContent=''; errorEl.textContent='';
+
+  if(!email){ errorEl.textContent='Enter email.'; return; }
+
+  try{
+    // Set status to reset_pending for admin approval
+    const { data, error } = await supabase
+      .from('User_Requests')
+      .upsert({ email, status:'reset_pending' }, { onConflict:['email'] });
+    if(error){ throw error; }
+    successEl.textContent='Password reset requested. Admin will update your password.';
+  }catch(err){
+    console.error(err);
+    errorEl.textContent='Something went wrong. Try again.';
   }
+}
 </script>
 
 </body>
