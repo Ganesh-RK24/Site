@@ -11,31 +11,31 @@
       background: #f0f2f5;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      padding-top: 50px;
+      align-items: center;
+      height: 100vh;
       margin: 0;
     }
-    .box {
+    .login-box, .register-box {
       background: #fff;
       padding: 30px;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      width: 350px;
+      width: 320px;
       text-align: center;
       margin: 10px;
     }
-    .box h2 {
+    h2 {
       margin-bottom: 20px;
       color: #333;
     }
-    .box input {
+    input {
       width: 100%;
       padding: 10px;
       margin: 8px 0;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-    .box button {
+    button {
       width: 100%;
       padding: 10px;
       background: #3498db;
@@ -44,164 +44,151 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .box button:hover {
+    button:hover {
       background: #2980b9;
     }
-    .error, .success {
+    .error {
+      color: red;
       margin-top: 12px;
-      font-weight: bold;
     }
-    .error { color: red; }
-    .success { color: green; }
-    .link-btn { background: none; border: none; color: #3498db; cursor: pointer; text-decoration: underline; margin-top: 8px; }
+    .success {
+      color: green;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
 
-<!-- LOGIN BOX -->
-<div class="box" id="login-box">
+<div class="login-box">
   <h2>Login</h2>
   <input type="email" id="login-email" placeholder="Email Id" required />
   <input type="password" id="login-password" placeholder="Password" required />
   <button onclick="login()">Login</button>
   <div class="error" id="login-error"></div>
-  <button class="link-btn" onclick="showRegister()">Register</button>
-  <button class="link-btn" onclick="showForgot()">Forgot Password?</button>
+  <div class="success" id="login-success"></div>
 </div>
 
-<!-- REGISTER BOX -->
-<div class="box" id="register-box" style="display:none;">
+<div class="register-box">
   <h2>Register</h2>
   <input type="text" id="reg-username" placeholder="User Name" required />
   <input type="email" id="reg-email" placeholder="Email Id" required />
   <input type="password" id="reg-password" placeholder="Password" required />
-  <button onclick="register()">Submit Registration</button>
-  <div class="success" id="reg-success"></div>
+  <button onclick="register()">Register</button>
   <div class="error" id="reg-error"></div>
-  <button class="link-btn" onclick="showLogin()">Back to Login</button>
-</div>
-
-<!-- FORGOT PASSWORD BOX -->
-<div class="box" id="forgot-box" style="display:none;">
-  <h2>Forgot Password</h2>
-  <input type="email" id="forgot-email" placeholder="Email Id" required />
-  <button onclick="forgotPassword()">Reset Password</button>
-  <div class="success" id="forgot-success"></div>
-  <div class="error" id="forgot-error"></div>
-  <button class="link-btn" onclick="showLogin()">Back to Login</button>
+  <div class="success" id="reg-success"></div>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-const SUPABASE_KEY = 'YOUR_SUPABASE_KEY';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- UI Functions ---
-function showRegister(){
-  document.getElementById('login-box').style.display='none';
-  document.getElementById('register-box').style.display='block';
-  document.getElementById('forgot-box').style.display='none';
-}
-function showLogin(){
-  document.getElementById('login-box').style.display='block';
-  document.getElementById('register-box').style.display='none';
-  document.getElementById('forgot-box').style.display='none';
-}
-function showForgot(){
-  document.getElementById('login-box').style.display='none';
-  document.getElementById('register-box').style.display='none';
-  document.getElementById('forgot-box').style.display='block';
-}
+  // ====================== LOGIN ======================
+  async function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    const errorEl = document.getElementById('login-error');
+    const successEl = document.getElementById('login-success');
+    errorEl.textContent = '';
+    successEl.textContent = '';
 
-// --- LOGIN ---
-async function login(){
-  const errorEl = document.getElementById('login-error');
-  errorEl.textContent='';
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value.trim();
-  if(!email || !password){ errorEl.textContent='Enter email & password.'; return; }
-
-  try{
-    const { data, error } = await supabase
-      .from('Login Credientials')
-      .select('"User Name","Email Id",Password,Role')
-      .eq('Email Id', email)
-      .single();
-    if(error){ throw error; }
-    if(!data || data.Password !== password){
-      errorEl.textContent='Invalid credentials.'; return;
+    if (!email || !password) {
+      errorEl.textContent = 'Please enter both email and password.';
+      return;
     }
-    // Save user and redirect
-    localStorage.setItem('loggedInUser', JSON.stringify({
-      username: data['User Name'], email: data['Email Id'], role: data.Role
-    }));
-    window.location.href='dashboard.html';
-  }catch(err){
-    // Check if user is pending approval
-    try{
-      const { data } = await supabase
-        .from('User_Requests')
-        .select('*')
-        .eq('email', email)
+
+    try {
+      const { data, error } = await supabase
+        .from('Login Credientials')
+        .select('"User Name", "Email Id", Password, Role')
+        .eq('Email Id', email)
         .single();
-      if(data && data.status==='pending'){
-        errorEl.textContent='Approval Pending. Admin will approve your account.';
-        return;
-      } else if(data && data.status==='reset_pending'){
-        errorEl.textContent='Password reset requested. Admin will update your password.';
+
+      if (error || !data) {
+        errorEl.textContent = 'Invalid credentials or user not found.';
         return;
       }
-    }catch(e){}
-    console.error(err);
-    errorEl.textContent='Something went wrong. Try again.';
+
+      // Check if user is pending approval
+      const { data: pending } = await supabase
+        .from('User_Requests')
+        .select('*')
+        .eq('Email Id', email)
+        .eq('status', 'pending')
+        .single();
+
+      if (pending) {
+        errorEl.textContent = 'Approval pending. Please wait for admin approval.';
+        return;
+      }
+
+      // Compare password
+      if (data.Password !== password) {
+        errorEl.textContent = 'Invalid credentials.';
+        return;
+      }
+
+      const user = {
+        username: data['User Name'],
+        email: data['Email Id'],
+        role: data.Role
+      };
+      localStorage.setItem('loggedInUser', JSON.stringify(user));
+      successEl.textContent = 'Login successful! Redirecting...';
+      setTimeout(() => window.location.href = 'dashboard.html', 1000);
+    } catch (err) {
+      console.error('Login error:', err);
+      errorEl.textContent = 'Something went wrong. ' + err.message;
+    }
   }
-}
 
-// --- REGISTER ---
-async function register(){
-  const username=document.getElementById('reg-username').value.trim();
-  const email=document.getElementById('reg-email').value.trim();
-  const password=document.getElementById('reg-password').value.trim();
-  const successEl=document.getElementById('reg-success');
-  const errorEl=document.getElementById('reg-error');
-  successEl.textContent=''; errorEl.textContent='';
+  // ====================== REGISTER ======================
+  async function register() {
+    const username = document.getElementById('reg-username').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value.trim();
+    const errorEl = document.getElementById('reg-error');
+    const successEl = document.getElementById('reg-success');
+    errorEl.textContent = '';
+    successEl.textContent = '';
 
-  if(!username||!email||!password){ errorEl.textContent='All fields are required.'; return; }
+    if (!username || !email || !password) {
+      errorEl.textContent = 'All fields are required.';
+      return;
+    }
 
-  try{
-    // Insert into pending requests
-    const { data, error } = await supabase
-      .from('User_Requests')
-      .insert([{ user_name: username, email, password, status:'pending' }]);
-    if(error){ throw error; }
-    successEl.textContent='Registration submitted! Admin approval required.';
-  }catch(err){
-    console.error(err);
-    errorEl.textContent='Registration failed. Try again.';
+    try {
+      // Check if already exists in Login Credientials
+      const { data: existing } = await supabase
+        .from('Login Credientials')
+        .select('*')
+        .eq('Email Id', email)
+        .single();
+
+      if (existing) {
+        errorEl.textContent = 'User already exists.';
+        return;
+      }
+
+      // Insert into User_Requests table
+      const { error } = await supabase
+        .from('User_Requests')
+        .insert([{ 'User Name': username, 'Email Id': email, Password: password, status: 'pending' }]);
+
+      if (error) {
+        errorEl.textContent = 'Registration failed: ' + error.message;
+        return;
+      }
+
+      successEl.textContent = 'Registered successfully! Waiting for admin approval.';
+      document.getElementById('reg-username').value = '';
+      document.getElementById('reg-email').value = '';
+      document.getElementById('reg-password').value = '';
+    } catch (err) {
+      console.error('Register error:', err);
+      errorEl.textContent = 'Something went wrong. ' + err.message;
+    }
   }
-}
-
-// --- FORGOT PASSWORD ---
-async function forgotPassword(){
-  const email=document.getElementById('forgot-email').value.trim();
-  const successEl=document.getElementById('forgot-success');
-  const errorEl=document.getElementById('forgot-error');
-  successEl.textContent=''; errorEl.textContent='';
-
-  if(!email){ errorEl.textContent='Enter email.'; return; }
-
-  try{
-    // Set status to reset_pending for admin approval
-    const { data, error } = await supabase
-      .from('User_Requests')
-      .upsert({ email, status:'reset_pending' }, { onConflict:['email'] });
-    if(error){ throw error; }
-    successEl.textContent='Password reset requested. Admin will update your password.';
-  }catch(err){
-    console.error(err);
-    errorEl.textContent='Something went wrong. Try again.';
-  }
-}
 </script>
 
 </body>
