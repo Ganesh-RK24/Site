@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login / Register</title>
+  <title>Login</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
@@ -42,17 +43,12 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      margin-top: 10px;
     }
     .login-box button:hover {
       background: #2980b9;
     }
     .error {
       color: red;
-      margin-top: 12px;
-    }
-    .success {
-      color: green;
       margin-top: 12px;
     }
   </style>
@@ -64,121 +60,62 @@
   <input type="email" id="email" placeholder="Email Id" required />
   <input type="password" id="password" placeholder="Password" required />
   <button onclick="login()">Login</button>
-  <button onclick="showRegister()">Register</button>
   <div class="error" id="error-msg"></div>
-  <div class="success" id="success-msg"></div>
 </div>
 
 <script>
   const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-  const SUPABASE_KEY = 'YOUR_SUPABASE_KEY'; // Replace with your actual key
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';  // ← Replace this
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  function showRegister() {
-    const box = document.querySelector('.login-box');
-    box.innerHTML = `
-      <h2>Register</h2>
-      <input type="text" id="reg-username" placeholder="User Name" required />
-      <input type="email" id="reg-email" placeholder="Email Id" required />
-      <input type="password" id="reg-password" placeholder="Password" required />
-      <button onclick="register()">Submit Registration</button>
-      <button onclick="location.reload()">Back to Login</button>
-      <div class="error" id="error-msg"></div>
-      <div class="success" id="success-msg"></div>
-    `;
-  }
-
-  async function register() {
-    const username = document.getElementById('reg-username').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value.trim();
-    const errorEl = document.getElementById('error-msg');
-    const successEl = document.getElementById('success-msg');
-    errorEl.textContent = '';
-    successEl.textContent = '';
-
-    if (!username || !email || !password) {
-      errorEl.textContent = 'All fields are required.';
-      return;
-    }
-
-    try {
-      // Insert into Pending Approvals table
-      const { data, error } = await supabaseClient
-        .from('Pending Approvals')
-        .insert([{ "User Name": username, "Email Id": email, "Password": password, status: 'pending' }]);
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        errorEl.textContent = 'Failed to submit registration. Try again.';
-        return;
-      }
-
-      successEl.textContent = 'Registration submitted! Await admin approval.';
-    } catch (err) {
-      console.error(err);
-      errorEl.textContent = 'Something went wrong. Try again.';
-    }
-  }
-
   async function login() {
+    const errorMsgEl = document.getElementById('error-msg');
+    errorMsgEl.textContent = '';
+
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
-    const errorEl = document.getElementById('error-msg');
-    const successEl = document.getElementById('success-msg');
-    errorEl.textContent = '';
-    successEl.textContent = '';
 
     if (!email || !password) {
-      errorEl.textContent = 'Please enter both email and password.';
+      errorMsgEl.textContent = 'Please enter both email and password.';
       return;
     }
 
     try {
-      // Check Login Credentials first
       const { data, error } = await supabaseClient
         .from('Login Credientials')
-        .select('"User Name", "Email Id", Password, Role, Team"')
+        .select('"User Name", "Email Id", Password, Role')
         .eq('Email Id', email)
         .single();
 
-      if (error && error.code === 'PGRST116') { // user not found
-        // Check Pending Approvals
-        const { data: pendingData } = await supabaseClient
-          .from('Pending Approvals')
-          .select('*')
-          .eq('Email Id', email)
-          .single();
-
-        if (pendingData) {
-          errorEl.textContent = 'Approval pending. Please wait for admin approval.';
-          return;
-        } else {
-          errorEl.textContent = 'Invalid credentials or user not found.';
-          return;
-        }
+      if (error) {
+        console.error('Supabase error:', error);
+        errorMsgEl.textContent = 'Invalid credentials or user not found.';
+        return;
       }
-
-      // Password check
-      if (data.Password !== password) {
-        errorEl.textContent = 'Invalid credentials.';
+      if (!data) {
+        errorMsgEl.textContent = 'Invalid credentials.';
         return;
       }
 
-      // Save to localStorage
+      // Compare password (plaintext) — for production use hashed passwords
+      if (data.Password !== password) {
+        errorMsgEl.textContent = 'Invalid credentials.';
+        return;
+      }
+
+      // Save user info to localStorage
       const user = {
         username: data['User Name'],
         email: data['Email Id'],
-        role: data.Role,
-        team: data.Team
+        role: data.Role
       };
       localStorage.setItem('loggedInUser', JSON.stringify(user));
 
       // Redirect to dashboard
       window.location.href = 'dashboard.html';
     } catch (err) {
-      console.error(err);
-      errorEl.textContent = 'Something went wrong. Try again.';
+      console.error('Unexpected login error:', err);
+      errorMsgEl.textContent = 'Something went wrong. Please try again.';
     }
   }
 </script>
