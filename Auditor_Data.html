@@ -6,301 +6,530 @@
   <title>Auditor Data Upload & Reports</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #121212; color: #eee; padding: 20px; }
-    .container { max-width: 100%; margin: 0 auto; }
-    h2 { color: #4a90e2; margin-bottom: 20px; }
-    .section, .upload-section, .filter-section { background: #1f1f1f; padding: 20px; border-radius: 10px; box-shadow: 0 0 15px #4a90e2; margin-bottom: 20px; }
-    .form-row { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 15px; }
-    .form-row > * { flex: 1 1 200px; }
-    input[type="file"], input[type="date"], select, input[type="number"], input[type="text"], button { padding: 12px; border-radius: 6px; border: none; background-color: #333; color: #eee; width: 100%; box-sizing: border-box; }
-    input[type="file"]::-webkit-file-upload-button { background: #4a90e2; color: #fff; border: none; padding: 8px 14px; cursor: pointer; border-radius: 6px; }
-    input[type="file"]::-webkit-file-upload-button:hover { background: #357ABD; }
-    button { background-color: #4a90e2; font-weight: 700; cursor: pointer; }
-    button:hover { background-color: #357ABD; }
-    .message { margin-top: 10px; font-weight: 700; min-height: 24px; }
-    table { width: 100%; border-collapse: collapse; background: #222; color: #eee; border-radius: 8px; overflow: hidden; }
-    th, td { padding: 12px 15px; border-bottom: 1px solid #444; text-align: left; }
-    th { background-color: #4a90e2; }
-    tr:hover { background-color: #333; }
-    .download-button { background-color: #4caf50; color: white; font-weight: 700; padding: 12px; border-radius: 6px; cursor: pointer; border: none; width: 100%; }
-    .download-button:hover { background-color: #388e3c; }
-    .pagination { margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .pagination button { background-color: #4a90e2; border: none; color: white; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; }
-    .pagination button:disabled { background-color: #666; cursor: not-allowed; }
-    .pagination input { padding: 6px 8px; border-radius: 5px; border: none; text-align: center; width: 60px; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      color: #eee;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    h2 {
+      color: #4a90e2;
+      margin-bottom: 20px;
+    }
+
+    .section, .upload-section, .filter-section {
+      background: #1f1f1f;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #4a90e2;
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+    .form-row > * {
+      flex: 1 1 200px;
+    }
+
+    input[type="file"], input[type="date"], select, input[type="number"], input[type="text"], button {
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      background-color: #333;
+      color: #eee;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    input[type="file"]::-webkit-file-upload-button {
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    input[type="file"]::-webkit-file-upload-button:hover {
+      background: #357ABD;
+    }
+
+    button {
+      background-color: #4a90e2;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #357ABD;
+    }
+
+    .message {
+      margin-top: 10px;
+      font-weight: 700;
+      min-height: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #222;
+      color: #eee;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #444;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4a90e2;
+    }
+
+    tr:hover {
+      background-color: #333;
+    }
+
+    .download-button {
+      background-color: #4caf50;
+      color: white;
+      font-weight: 700;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+    }
+
+    .download-button:hover {
+      background-color: #388e3c;
+    }
+
+    .pagination {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .pagination button {
+      background-color: #4a90e2;
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .pagination button:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+    }
+
   </style>
 </head>
 <body>
-<div class="container">
-  <h2>Auditor Data Upload & Reports</h2>
+  <div class="container">
+    <h2>Auditor Data Upload & Reports</h2>
 
-  <!-- Manpower Section -->
-  <div class="section">
-    <h3>🧑‍🔧 Manpower Data Entry</h3>
-    <div class="form-row">
-      <input type="date" id="mpDate" />
-      <select id="mpWarehouse">
-        <option value="">Select Warehouse</option>
-        <option value="W501">W501</option>
-        <option value="W503">W503</option>
-        <option value="W504">W504</option>
-        <option value="W506">W506</option>
-        <option value="W509">W509</option>
-        <option value="W511">W511</option>
-        <option value="W512">W512</option>
-      </select>
-      <select id="mpVendor">
-        <option value="">Select Vendor</option>
-        <option value="Matrix Business Services India Private Limited">Matrix Business Services India Private Limited</option>
-        <option value="PRO-Team Solution Pvt Ltd">PRO-Team Solution Pvt Ltd</option>
-      </select>
-      <input type="number" id="mpCount" placeholder="MP Count" />
+    <!-- Manpower Section -->
+    <div class="section">
+      <h3>🧑‍🔧 Manpower Data Entry</h3>
+      <div class="form-row">
+        <input type="date" id="mpDate" />
+        <select id="mpWarehouse">
+          <option value="">Select Warehouse</option>
+          <option value="W501">W501</option>
+          <option value="W503">W503</option>
+          <option value="W504">W504</option>
+          <option value="W506">W506</option>
+          <option value="W509">W509</option>
+          <option value="W511">W511</option>
+          <option value="W512">W512</option>
+        </select>
+        <select id="mpVendor">
+          <option value="">Select Vendor</option>
+          <option value="Matrix Business Services India Private Limited">Matrix Business Services India Private Limited</option>
+          <option value="PRO-Team Solution Pvt Ltd">PRO-Team Solution Pvt Ltd</option>
+        </select>
+        <input type="number" id="mpCount" placeholder="MP Count" />
+      </div>
+      <button id="submitMP">Submit Manpower Entry</button>
+      <div class="message" id="mpMessage"></div>
     </div>
-    <button id="submitMP">Submit Manpower Entry</button>
-    <div class="message" id="mpMessage"></div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+      <h3>📤Please Upload Counted Data ⬆️</h3>
+      <div class="form-row">
+        <input type="file" id="fileInput" accept=".csv" />
+        <button id="uploadBtn">📤 Upload CSV</button>
+      </div>
+      <div class="message" id="message"></div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="form-row">
+        <input type="date" id="fromDate" placeholder="From Date" />
+        <input type="date" id="toDate" placeholder="To Date" />
+        <select id="filterWarehouse">
+          <option value="">All Warehouses</option>
+          <option value="W501">W501</option>
+          <option value="W503">W503</option>
+          <option value="W504">W504</option>
+          <option value="W506">W506</option>
+          <option value="W509">W509</option>
+          <option value="W511">W511</option>
+          <option value="W512">W512</option>
+        </select>
+      </div>
+      <div class="form-row" style="gap: 15px;">
+        <button id="filterBtn" style="flex:1 1 auto;">Filter</button>
+        <button class="download-button" id="downloadCsvBtn" style="flex:1 1 auto;">Download CSV</button>
+      </div>
+    </div>
+
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Counted Date</th>
+          <th>Warehouse No</th>
+          <th>Auditor</th>
+          <th>Bin Code</th>
+          <th>Verified</th>
+          <th>Scanned Qty</th>
+          <th>Auditor Qty</th>
+          <th>Mismatch</th>
+          <th>Reverified</th>
+          <th>Reverified Phy Qty</th>
+          <th>Final Remarks</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="pagination" id="pagination"></div>
   </div>
 
-  <!-- Upload Section -->
-  <div class="upload-section">
-    <h3>📤 Please Upload Counted Data ⬆️</h3>
-    <div class="form-row">
-      <input type="file" id="fileInput" accept=".csv" />
-      <button id="uploadBtn">📤 Upload CSV</button>
-    </div>
-    <div class="message" id="message"></div>
-  </div>
+  <script>
+    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+    const { createClient } = supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  <!-- Filter Section -->
-  <div class="filter-section">
-    <div class="form-row">
-      <input type="date" id="fromDate" placeholder="From Date" />
-      <input type="date" id="toDate" placeholder="To Date" />
-      <select id="filterWarehouse">
-        <option value="">All Warehouses</option>
-        <option value="W501">W501</option>
-        <option value="W503">W503</option>
-        <option value="W504">W504</option>
-        <option value="W506">W506</option>
-        <option value="W509">W509</option>
-        <option value="W511">W511</option>
-        <option value="W512">W512</option>
-      </select>
-    </div>
-    <div class="form-row" style="gap: 15px;">
-      <button id="filterBtn" style="flex:1 1 auto;">Filter</button>
-      <button class="download-button" id="downloadCsvBtn" style="flex:1 1 auto;">Download CSV</button>
-    </div>
-  </div>
+    let auditorData = [];
+    let currentPage = 1;
+    const pageSize = 100;
+    let totalRows = 0;
 
-  <table id="dataTable">
-    <thead>
-      <tr>
-        <th>Counted Date</th>
-        <th>Warehouse No</th>
-        <th>Auditor</th>
-        <th>Bin Code</th>
-        <th>Verified</th>
-        <th>Scanned Qty</th>
-        <th>Auditor Qty</th>
-        <th>Mismatch</th>
-        <th>Reverified</th>
-        <th>Reverified Phy Qty</th>
-        <th>Final Remarks</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    const mpDate = document.getElementById('mpDate');
+    const mpWarehouse = document.getElementById('mpWarehouse');
+    const mpVendor = document.getElementById('mpVendor');
+    const mpCount = document.getElementById('mpCount');
+    const submitMP = document.getElementById('submitMP');
+    const mpMessage = document.getElementById('mpMessage');
 
-  <div class="pagination" id="pagination"></div>
-</div>
+    submitMP.addEventListener('click', async () => {
+      mpMessage.textContent = '';
+      if (!mpDate.value || !mpWarehouse.value || !mpVendor.value || !mpCount.value) {
+        mpMessage.style.color = '#f44336';
+        mpMessage.textContent = '❌ Please fill all fields.';
+        return;
+      }
 
-<script>
-const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
-const { createClient } = supabase;
-const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { error } = await client
+        .from('Manpower_Data')
+        .insert([{
+          Date: mpDate.value,
+          "Warehouse No": mpWarehouse.value,
+          Vendor: mpVendor.value,
+          "MP Count": parseInt(mpCount.value)
+        }]);
 
-let auditorData = [];
-let currentPage = 1;
-const pageSize = 100;
+      if (error) {
+        mpMessage.style.color = '#f44336';
+        mpMessage.textContent = `❌ Failed to submit: ${error.message}`;
+      } else {
+        mpMessage.style.color = '#4caf50';
+        mpMessage.textContent = '✅ Manpower data submitted successfully!';
+        mpDate.value = '';
+        mpWarehouse.value = '';
+        mpVendor.value = '';
+        mpCount.value = '';
+      }
+    });
 
-const mpDate = document.getElementById('mpDate');
-const mpWarehouse = document.getElementById('mpWarehouse');
-const mpVendor = document.getElementById('mpVendor');
-const mpCount = document.getElementById('mpCount');
-const submitMP = document.getElementById('submitMP');
-const mpMessage = document.getElementById('mpMessage');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const messageDiv = document.getElementById('message');
+    const fromDate = document.getElementById('fromDate');
+    const toDate = document.getElementById('toDate');
+    const filterWarehouse = document.getElementById('filterWarehouse');
+    const filterBtn = document.getElementById('filterBtn');
+    const downloadBtn = document.getElementById('downloadCsvBtn');
+    const dataTableBody = document.querySelector('#dataTable tbody');
+    const paginationDiv = document.getElementById('pagination');
 
-submitMP.addEventListener('click', async () => {
-  mpMessage.textContent = '';
-  if (!mpDate.value || !mpWarehouse.value || !mpVendor.value || !mpCount.value) {
-    mpMessage.style.color = '#f44336';
-    mpMessage.textContent = '❌ Please fill all fields.';
-    return;
-  }
+    uploadBtn.addEventListener('click', async () => {
+      messageDiv.textContent = '';
+      if (!fileInput.files.length) {
+        messageDiv.style.color = '#f44336';
+        messageDiv.textContent = '❌ Please select a CSV file.';
+        return;
+      }
 
-  const { error } = await client
-    .from('Manpower_Data')
-    .insert([{
-      Date: mpDate.value,
-      "Warehouse No": mpWarehouse.value,
-      Vendor: mpVendor.value,
-      "MP Count": parseInt(mpCount.value)
-    }]);
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          let csvText = e.target.result;
+          let jsonData = csvToJson(csvText);
+          jsonData = normalizeDateFields(jsonData);
 
-  if (error) {
-    mpMessage.style.color = '#f44336';
-    mpMessage.textContent = `❌ Failed to submit: ${error.message}`;
-  } else {
-    mpMessage.style.color = '#4caf50';
-    mpMessage.textContent = '✅ Manpower entry submitted successfully';
-    mpDate.value = '';
-    mpWarehouse.value = '';
-    mpVendor.value = '';
-    mpCount.value = '';
-  }
-});
+          const { error } = await client.from('Auditor_Counted').insert(jsonData);
 
-const uploadBtn = document.getElementById('uploadBtn');
-const fileInput = document.getElementById('fileInput');
-const message = document.getElementById('message');
+          if (error) {
+            messageDiv.style.color = '#f44336';
+            messageDiv.textContent = `❌ Upload failed: ${error.message}`;
+          } else {
+            messageDiv.style.color = '#4caf50';
+            messageDiv.textContent = `✅ Uploaded ${jsonData.length} rows.`;
+            loadFromSupabase(1);
+          }
+        } catch (err) {
+          messageDiv.style.color = '#f44336';
+          messageDiv.textContent = '❌ Error parsing/uploading CSV.';
+        }
+      };
+      reader.readAsText(file);
+    });
 
-uploadBtn.addEventListener('click', async () => {
-  if (!fileInput.files[0]) {
-    message.style.color = '#f44336';
-    message.textContent = '❌ Please select a CSV file to upload.';
-    return;
-  }
-  const file = fileInput.files[0];
-  const text = await file.text();
-  const rows = text.split('\n').map(r => r.split(','));
-  const headers = rows[0].map(h => h.trim());
-  const data = rows.slice(1).map(r => {
-    let obj = {};
-    headers.forEach((h, i) => obj[h] = r[i] ? r[i].trim() : null);
-    return obj;
-  });
+    // --- FIXED VERSION BELOW ---
+    function csvToJson(csv) {
+      const lines = csv.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      const numericFields = ['Scanned Qty', 'Auditor Qty', 'Reverified Phy Qty'];
 
-  const { error } = await client.from('Auditor_Data').insert(data);
-  if (error) {
-    message.style.color = '#f44336';
-    message.textContent = `❌ Upload failed: ${error.message}`;
-  } else {
-    message.style.color = '#4caf50';
-    message.textContent = '✅ CSV uploaded successfully';
-    fileInput.value = '';
-    fetchData();
-  }
-});
-
-const dataTableBody = document.querySelector('#dataTable tbody');
-const paginationDiv = document.getElementById('pagination');
-const fromDate = document.getElementById('fromDate');
-const toDate = document.getElementById('toDate');
-const filterWarehouse = document.getElementById('filterWarehouse');
-const filterBtn = document.getElementById('filterBtn');
-const downloadCsvBtn = document.getElementById('downloadCsvBtn');
-
-filterBtn.addEventListener('click', () => { currentPage = 1; fetchData(); });
-
-async function fetchData() {
-  let query = client.from('Auditor_Data').select('*');
-
-  if (fromDate.value) query = query.gte('Counted Date', fromDate.value);
-  if (toDate.value) query = query.lte('Counted Date', toDate.value);
-  if (filterWarehouse.value) query = query.eq('Warehouse No', filterWarehouse.value);
-
-  const { data, error } = await query;
-  if (error) { alert('Error fetching data: ' + error.message); return; }
-
-  auditorData = data || [];
-  renderTable();
-}
-
-function renderTable() {
-  const start = (currentPage - 1) * pageSize;
-  const pageData = auditorData.slice(start, start + pageSize);
-  dataTableBody.innerHTML = '';
-  pageData.forEach(row => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${row['Counted Date'] || ''}</td>
-      <td>${row['Warehouse No'] || ''}</td>
-      <td>${row['Auditor'] || ''}</td>
-      <td>${row['Bin Code'] || ''}</td>
-      <td>${row['Verified'] || ''}</td>
-      <td>${row['Scanned Qty'] || ''}</td>
-      <td>${row['Auditor Qty'] || ''}</td>
-      <td>${row['Mismatch'] || ''}</td>
-      <td>${row['Reverified'] || ''}</td>
-      <td>${row['Reverified Phy Qty'] || ''}</td>
-      <td>${row['Final Remarks'] || ''}</td>
-    `;
-    dataTableBody.appendChild(tr);
-  });
-
-  renderPagination();
-}
-
-function renderPagination() {
-  const totalPages = Math.ceil(auditorData.length / pageSize);
-  paginationDiv.innerHTML = '';
-
-  const createBtn = (text, disabled, clickFn) => {
-    const btn = document.createElement('button');
-    btn.textContent = text;
-    if (disabled) btn.disabled = true;
-    btn.addEventListener('click', clickFn);
-    paginationDiv.appendChild(btn);
-  };
-
-  createBtn('Prev', currentPage === 1, () => { currentPage--; renderTable(); });
-
-  const startPage = Math.max(1, currentPage - 2);
-  const endPage = Math.min(totalPages, currentPage + 2);
-
-  for (let i = startPage; i <= endPage; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.style.fontWeight = i === currentPage ? 'bold' : 'normal';
-    btn.addEventListener('click', () => { currentPage = i; renderTable(); });
-    paginationDiv.appendChild(btn);
-  }
-
-  const input = document.createElement('input');
-  input.type = 'number';
-  input.min = 1;
-  input.max = totalPages;
-  input.placeholder = 'Page';
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const val = parseInt(input.value);
-      if (!isNaN(val) && val >= 1 && val <= totalPages) { currentPage = val; renderTable(); }
+      return lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const obj = {};
+        headers.forEach((header, idx) => {
+          let val = values[idx];
+          if (val === undefined || val === '') {
+            val = null;
+          } else if (numericFields.includes(header)) {
+            const num = Number(val);
+            val = isNaN(num) ? null : num;
+          }
+          obj[header] = val;
+        });
+        return obj;
+      });
     }
-  });
-  paginationDiv.appendChild(input);
+    // --- END FIX ---
 
-  createBtn('Next', currentPage === totalPages, () => { currentPage++; renderTable(); });
-}
+    function normalizeDateFields(dataArray) {
+      return dataArray.map(item => {
+        if (item['Counted Date']) {
+          item['Counted Date'] = formatDateToISO(item['Counted Date']);
+        }
+        return item;
+      });
+    }
 
-downloadCsvBtn.addEventListener('click', () => {
-  if (!auditorData.length) return;
-  const headers = Object.keys(auditorData[0]);
-  const csvRows = [headers.join(',')];
-  auditorData.forEach(row => {
-    csvRows.push(headers.map(h => `"${row[h] || ''}"`).join(','));
-  });
-  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'auditor_data.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-});
+    function formatDateToISO(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.includes('-') ? dateStr.split('-') : dateStr.split('/');
+      if (parts.length === 3) {
+        if (parts[0].length === 4) return dateStr;
+        const [dd, mm, yyyy] = parts;
+        return `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+      }
+      return dateStr;
+    }
 
-fetchData();
-</script>
+    function renderTable(data) {
+      dataTableBody.innerHTML = '';
+      if (!data.length) {
+        dataTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data to display</td></tr>';
+        return;
+      }
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row['Counted Date'] || ''}</td>
+          <td>${row['Warehouse No'] || ''}</td>
+          <td>${row['Auditor'] || ''}</td>
+          <td>${row['Bin Code'] || ''}</td>
+          <td>${row['Verified'] || ''}</td>
+          <td>${row['Scanned Qty'] || ''}</td>
+          <td>${row['Auditor Qty'] || ''}</td>
+          <td>${row['Mismatch'] || ''}</td>
+          <td>${row['Reverified'] || ''}</td>
+          <td>${row['Reverified Phy Qty'] || ''}</td>
+          <td>${row['Final Remarks'] || ''}</td>
+        `;
+        dataTableBody.appendChild(tr);
+      });
+    }
+
+    function renderPagination(totalPages) {
+      paginationDiv.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      const prevBtn = document.createElement('button');
+      prevBtn.textContent = 'Previous';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          loadFromSupabase(currentPage);
+        }
+      });
+      paginationDiv.appendChild(prevBtn);
+
+      const maxPagesToShow = 7;
+      let startPage = Math.max(1, currentPage - 3);
+      let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+      if (endPage - startPage < maxPagesToShow - 1) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        if (i === currentPage) {
+          pageBtn.style.backgroundColor = '#357ABD';
+          pageBtn.disabled = true;
+        }
+        pageBtn.addEventListener('click', () => {
+          currentPage = i;
+          loadFromSupabase(currentPage);
+        });
+        paginationDiv.appendChild(pageBtn);
+      }
+
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = 'Next';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          loadFromSupabase(currentPage);
+        }
+      });
+      paginationDiv.appendChild(nextBtn);
+    }
+
+    async function loadFromSupabase(page = 1) {
+      currentPage = page;
+      const from = (page - 1) * pageSize;
+
+      let query = client
+        .from('Auditor_Counted')
+        .select('*', { count: 'exact' })
+        .order('Counted Date', { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (fromDate.value) query = query.gte('Counted Date', fromDate.value);
+      if (toDate.value) query = query.lte('Counted Date', toDate.value);
+      if (filterWarehouse.value) query = query.eq('Warehouse No', filterWarehouse.value);
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        dataTableBody.innerHTML = `<tr><td colspan="11" style="color: #f44336;">Error loading data: ${error.message}</td></tr>`;
+        paginationDiv.innerHTML = '';
+        return;
+      }
+
+      auditorData = data || [];
+      totalRows = count || 0;
+      renderTable(auditorData);
+      renderPagination(Math.ceil(totalRows / pageSize));
+    }
+
+    filterBtn.addEventListener('click', () => {
+      loadFromSupabase(1);
+    });
+
+    downloadBtn.addEventListener('click', async () => {
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = 'Downloading...';
+
+      let query = client
+        .from('Auditor_Counted')
+        .select('*')
+        .order('Counted Date', { ascending: false });
+
+      if (fromDate.value) query = query.gte('Counted Date', fromDate.value);
+      if (toDate.value) query = query.lte('Counted Date', toDate.value);
+      if (filterWarehouse.value) query = query.eq('Warehouse No', filterWarehouse.value);
+
+      let allData = [];
+      let from = 0;
+      const batchSize = 1000;
+      while (true) {
+        const { data, error } = await query.range(from, from + batchSize - 1);
+        if (error) {
+          alert('Download failed: ' + error.message);
+          break;
+        }
+        if (!data || data.length === 0) break;
+
+        allData = allData.concat(data);
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
+
+      if (allData.length === 0) {
+        alert('No data found for the selected filters.');
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = 'Download CSV';
+        return;
+      }
+
+      const headers = Object.keys(allData[0]);
+      const csvRows = [
+        headers.join(','),
+        ...allData.map(row => headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(','))
+      ];
+      const csvContent = csvRows.join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `auditor_data_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      downloadBtn.disabled = false;
+      downloadBtn.textContent = 'Download CSV';
+    });
+
+    loadFromSupabase(1);
+  </script>
 </body>
 </html>
-
