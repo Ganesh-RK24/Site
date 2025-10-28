@@ -234,7 +234,6 @@
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Pagination and data tracking
     let auditorData = [];
     let currentPage = 1;
     const pageSize = 100;
@@ -322,16 +321,29 @@
       reader.readAsText(file);
     });
 
+    // --- FIXED VERSION BELOW ---
     function csvToJson(csv) {
       const lines = csv.trim().split('\n');
       const headers = lines[0].split(',').map(h => h.trim());
+      const numericFields = ['Scanned Qty', 'Auditor Qty', 'Reverified Phy Qty'];
+
       return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
         const obj = {};
-        headers.forEach((header, idx) => obj[header] = values[idx] || '');
+        headers.forEach((header, idx) => {
+          let val = values[idx];
+          if (val === undefined || val === '') {
+            val = null;
+          } else if (numericFields.includes(header)) {
+            const num = Number(val);
+            val = isNaN(num) ? null : num;
+          }
+          obj[header] = val;
+        });
         return obj;
       });
     }
+    // --- END FIX ---
 
     function normalizeDateFields(dataArray) {
       return dataArray.map(item => {
@@ -353,7 +365,6 @@
       return dateStr;
     }
 
-    // Render table rows
     function renderTable(data) {
       dataTableBody.innerHTML = '';
       if (!data.length) {
@@ -380,13 +391,10 @@
       });
     }
 
-    // Pagination buttons render
     function renderPagination(totalPages) {
       paginationDiv.innerHTML = '';
-
       if (totalPages <= 1) return;
 
-      // Prev button
       const prevBtn = document.createElement('button');
       prevBtn.textContent = 'Previous';
       prevBtn.disabled = currentPage === 1;
@@ -398,7 +406,6 @@
       });
       paginationDiv.appendChild(prevBtn);
 
-      // Page number buttons (limited)
       const maxPagesToShow = 7;
       let startPage = Math.max(1, currentPage - 3);
       let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
@@ -421,7 +428,6 @@
         paginationDiv.appendChild(pageBtn);
       }
 
-      // Next button
       const nextBtn = document.createElement('button');
       nextBtn.textContent = 'Next';
       nextBtn.disabled = currentPage === totalPages;
@@ -434,7 +440,6 @@
       paginationDiv.appendChild(nextBtn);
     }
 
-    // Load data from supabase with filters & pagination
     async function loadFromSupabase(page = 1) {
       currentPage = page;
       const from = (page - 1) * pageSize;
@@ -463,12 +468,10 @@
       renderPagination(Math.ceil(totalRows / pageSize));
     }
 
-    // Filter button event - load filtered data from Supabase page 1
     filterBtn.addEventListener('click', () => {
       loadFromSupabase(1);
     });
 
-    // Download button fetches full filtered data from Supabase (no paging) and downloads CSV
     downloadBtn.addEventListener('click', async () => {
       downloadBtn.disabled = true;
       downloadBtn.textContent = 'Downloading...';
@@ -482,7 +485,6 @@
       if (toDate.value) query = query.lte('Counted Date', toDate.value);
       if (filterWarehouse.value) query = query.eq('Warehouse No', filterWarehouse.value);
 
-      // Supabase limits 1000 rows per request, so we page internally
       let allData = [];
       let from = 0;
       const batchSize = 1000;
@@ -506,7 +508,6 @@
         return;
       }
 
-      // Convert to CSV string
       const headers = Object.keys(allData[0]);
       const csvRows = [
         headers.join(','),
@@ -514,7 +515,6 @@
       ];
       const csvContent = csvRows.join('\n');
 
-      // Download CSV file
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -529,9 +529,7 @@
       downloadBtn.textContent = 'Download CSV';
     });
 
-    // Load initial data
     loadFromSupabase(1);
   </script>
 </body>
 </html>
-
