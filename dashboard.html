@@ -1,77 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard | Warehouse Audit</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Warehouse Audit Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
+      font-family: 'Roboto', sans-serif;
       display: flex;
       min-height: 100vh;
-      background-color: #f0f2f5;
+      background-color: #f4f6f8;
     }
 
     /* Side Panel */
     .side-panel {
-      width: 250px;
-      background-color: #2c3e50;
+      width: 260px;
+      background-color: #1f2937;
       color: #fff;
-      padding: 20px;
       display: flex;
       flex-direction: column;
+      padding: 20px;
       position: fixed;
       top: 0;
       bottom: 0;
+      overflow-y: auto;
     }
 
     .side-panel h2 {
-      font-size: 22px;
-      font-weight: bold;
+      font-size: 24px;
+      font-weight: 700;
       margin-bottom: 30px;
       cursor: pointer;
+      color: #f3f4f6;
     }
 
     .side-panel a {
-      text-decoration: none;
-      color: #fff;
-      font-size: 16px;
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 4px;
-      transition: background-color 0.3s;
       display: block;
+      text-decoration: none;
+      color: #d1d5db;
+      font-size: 16px;
+      margin: 10px 0;
+      padding: 12px 15px;
+      border-radius: 6px;
+      transition: all 0.3s;
       cursor: pointer;
     }
 
     .side-panel a:hover {
-      background-color: #34495e;
+      background-color: #374151;
+      color: #fff;
     }
 
     .side-panel .logout {
       margin-top: auto;
-      background-color: #e74c3c;
+      background-color: #ef4444;
       text-align: center;
+      font-weight: 500;
     }
 
     /* Main Panel */
     .main-panel {
-      margin-left: 250px;
+      margin-left: 260px;
       flex-grow: 1;
       display: flex;
       flex-direction: column;
       height: 100vh;
-      background-color: #fff;
       overflow: hidden;
+      transition: all 0.3s;
     }
 
     .main-panel h1 {
       font-size: 28px;
-      font-weight: bold;
-      color: #333;
       margin: 20px;
-      flex-shrink: 0;
+      font-weight: 700;
+      color: #111827;
     }
 
     #content-area {
@@ -79,21 +83,36 @@
       display: flex;
       flex-direction: column;
       margin: 0 20px 20px 20px;
+      overflow: hidden;
+      border-radius: 8px;
     }
 
     iframe {
       width: 100%;
       height: 100%;
       border: none;
-      flex-grow: 1;
       border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Card Layout */
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 6px;
+      margin-bottom: 15px;
     }
 
     @media(max-width: 768px) {
       .side-panel {
         width: 200px;
-        padding: 15px;
       }
       .main-panel {
         margin-left: 200px;
@@ -107,13 +126,14 @@
       .side-panel {
         width: 100%;
         height: auto;
-        position: relative;
         flex-direction: row;
         overflow-x: auto;
+        padding: 10px;
       }
       .side-panel a {
         margin: 5px;
-        padding: 8px;
+        padding: 8px 10px;
+        font-size: 14px;
       }
       .main-panel {
         margin-left: 0;
@@ -149,7 +169,7 @@
 
     const role = loggedInUser.role;
 
-    // Role-based access
+    // Role-based access rights
     const accessRights = {
       'Owner': ['User Settings','Master Reports','Auditor Reports','Payments','Notifications','Help'],
       'Admin': ['User Settings','Master Reports','Auditor Reports','Payments','Notifications','Help'],
@@ -178,12 +198,14 @@
 
     restrictLinks();
 
-    // Page Load
-    window.onload = showWelcome;
-
+    // Load welcome dashboard with image and iframe
     function showWelcome() {
       document.getElementById('welcome').textContent = `Welcome, ${loggedInUser.username}`;
       document.getElementById('content-area').innerHTML = `
+        <div class="card">
+          <img src="https://warehousingetc.com/wp-content/uploads/2021/03/Warehouse-Audit-Details-768x432.png" alt="Warehouse Audit">
+          <p>Get insights on warehouse operations and audits.</p>
+        </div>
         <iframe 
           title="Warehouse Audit Dashboard" 
           src="https://app.powerbi.com/view?r=eyJrIjoiMGJmM2FmMTYtYjVmNi00YjM1LWI5MGMtMzA1ZGY3NjA5MzM5IiwidCI6ImQzNTZhZjUzLWYzNWYtNGVmZi04NmU1LTVjNjc2MzEzZTRlNCIsImMiOjEwfQ%3D%3D" 
@@ -233,6 +255,14 @@
     function logout() {
       localStorage.removeItem('loggedInUser');
       window.location.href = 'index.html';
+    }
+
+    window.onload = function() {
+      if (!loggedInUser || !loggedInUser.username) {
+        window.location.href = 'index.html';
+      } else {
+        showWelcome();
+      }
     }
   </script>
 
