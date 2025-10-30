@@ -3,70 +3,132 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register | Warehouse Audit System</title>
+  <title>Register | Warehouse Dashboard Access Portal</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: var(--bg, linear-gradient(135deg, #16a085, #2ecc71));
+      background: linear-gradient(135deg, #2a5298, #1e3c72);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
-      transition: background 0.3s, color 0.3s;
+      color: #fff;
     }
 
-    .register-box {
+    .container {
+      display: flex;
       background: #fff;
       color: #333;
-      padding: 30px;
-      border-radius: 10px;
-      width: 360px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      border-radius: 12px;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.4);
+      overflow: hidden;
+      width: 850px;
+      max-width: 95%;
     }
 
-    h2 {
+    /* Left image panel */
+    .left-panel {
+      flex: 1;
+      background: url('https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=900&q=80') center/cover no-repeat;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-start;
+      padding: 40px;
+      color: #fff;
+    }
+
+    .left-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1;
+    }
+
+    .left-panel h1, .left-panel p {
+      position: relative;
+      z-index: 2;
+    }
+
+    .left-panel h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .left-panel p {
+      font-size: 16px;
+      max-width: 280px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+
+    /* Registration form */
+    .register-box {
+      flex: 1;
+      padding: 50px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .register-box h2 {
+      margin-bottom: 25px;
+      color: #1e3c72;
       text-align: center;
-      margin-bottom: 20px;
     }
 
-    input, select {
+    input {
       width: 100%;
       padding: 12px;
       margin: 8px 0;
-      border-radius: 6px;
       border: 1px solid #ccc;
+      border-radius: 6px;
       font-size: 15px;
     }
 
     button {
       width: 100%;
       padding: 12px;
-      background: #16a085;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: #fff;
       border: none;
       border-radius: 6px;
-      cursor: pointer;
       font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
     }
 
     button:hover {
-      background: #138d75;
+      background: linear-gradient(135deg, #2a5298, #1e3c72);
     }
 
-    .theme-toggle {
+    .error, .success {
       text-align: center;
-      margin-bottom: 15px;
+      margin-top: 12px;
+      font-weight: 500;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .success {
+      color: green;
     }
 
     .login-link {
       text-align: center;
-      margin-top: 15px;
+      margin-top: 20px;
     }
 
     .login-link a {
-      color: #16a085;
+      color: #1e3c72;
       text-decoration: none;
       font-weight: 600;
     }
@@ -75,71 +137,43 @@
       text-decoration: underline;
     }
 
-    .error { color: red; text-align: center; margin-top: 10px; }
-    .success { color: green; text-align: center; margin-top: 10px; }
-
-    body.dark {
-      background: #121212;
-      color: #eee;
-    }
-
-    body.dark .register-box {
-      background: #1e1e1e;
-      color: #eee;
-      border: 1px solid #333;
-    }
-
-    body.dark input, body.dark select {
-      background: #333;
-      color: #eee;
-      border: 1px solid #555;
-    }
-
-    body.dark button {
-      background: #3498db;
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        width: 95%;
+      }
+      .left-panel {
+        height: 200px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+      .left-panel h1, .left-panel p {
+        max-width: 100%;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="register-box">
-    <div class="theme-toggle">
-      <label>
-        🌞 / 🌙 
-        <input type="checkbox" id="themeSwitch" />
-      </label>
+  <div class="container">
+    <div class="left-panel">
+      <h1>Join the Warehouse Network</h1>
+      <p>Register to request access for audit and operations — pending admin approval.</p>
     </div>
 
-    <h2>Register</h2>
-    <input type="text" id="username" placeholder="Full Name" required />
-    <input type="email" id="email" placeholder="Email Id" required />
-    <input type="password" id="password" placeholder="Password" required />
-    
-    <select id="role">
-      <option value="">Select Role</option>
-      <option value="Auditor">Auditor</option>
-      <option value="Admin">Admin</option>
-      <option value="Executive">Executive</option>
-      <option value="Team Leader">Team Leader</option>
-      <option value="Team Member">Team Member</option>
-    </select>
+    <div class="register-box">
+      <h2>Create Account</h2>
+      <input type="text" id="username" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email Id" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <input type="password" id="confirm-password" placeholder="Confirm Password" required />
+      <button onclick="register()">Register</button>
+      <div id="message"></div>
 
-    <select id="warehouse">
-      <option value="">Select Warehouse</option>
-      <option value="W501">W501</option>
-      <option value="W503">W503</option>
-      <option value="W504">W504</option>
-      <option value="W506">W506</option>
-      <option value="W509">W509</option>
-      <option value="W511">W511</option>
-      <option value="W512">W512</option>
-    </select>
-
-    <button onclick="registerUser()">Register</button>
-    <div id="message" class="error"></div>
-
-    <div class="login-link">
-      <p>Already have an account? <a href="index.html">Login here</a></p>
+      <div class="login-link">
+        <p>Already have an account? <a href="index.html">Login Here</a></p>
+      </div>
     </div>
   </div>
 
@@ -148,67 +182,74 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Theme toggle
-    const themeSwitch = document.getElementById('themeSwitch');
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.classList.add('dark');
-      themeSwitch.checked = true;
-    }
-
-    themeSwitch.addEventListener('change', () => {
-      if (themeSwitch.checked) {
-        document.body.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.body.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
-    });
-
-    async function registerUser() {
+    async function register() {
       const username = document.getElementById('username').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
-      const role = document.getElementById('role').value;
-      const warehouse = document.getElementById('warehouse').value;
+      const confirmPassword = document.getElementById('confirm-password').value.trim();
       const messageEl = document.getElementById('message');
+
       messageEl.textContent = '';
+      messageEl.className = '';
 
-      if (!username || !email || !password || !role || !warehouse) {
+      if (!username || !email || !password || !confirmPassword) {
         messageEl.textContent = 'Please fill all fields.';
+        messageEl.className = 'error';
         return;
       }
 
-      const { data: existing } = await supabaseClient
-        .from('Login Credientials')
-        .select('"Email Id"')
-        .eq('Email Id', email)
-        .single();
-
-      if (existing) {
-        messageEl.textContent = 'Email already registered.';
+      if (password !== confirmPassword) {
+        messageEl.textContent = 'Passwords do not match.';
+        messageEl.className = 'error';
         return;
       }
 
-      const { error } = await supabaseClient
-        .from('Login Credientials')
-        .insert([{
-          "User Name": username,
-          "Email Id": email,
-          Password: password,
-          Role: role,
-          Warehouse: warehouse,
-          Approved: false
-        }]);
+      try {
+        // Check if email already exists
+        const { data: existingUser, error: fetchError } = await supabaseClient
+          .from('Login Credientials')
+          .select('Email Id')
+          .eq('Email Id', email)
+          .single();
 
-      if (error) {
-        messageEl.textContent = 'Error registering: ' + error.message;
-      } else {
-        messageEl.className = 'success';
-        messageEl.textContent = '✅ Registered successfully! Awaiting admin approval.';
-        setTimeout(() => (window.location.href = 'index.html'), 2500);
+        if (existingUser) {
+          messageEl.textContent = 'Email already registered. Please login.';
+          messageEl.className = 'error';
+          return;
+        }
+
+        // Insert new user with "Pending" approval
+        const { error } = await supabaseClient
+          .from('Login Credientials')
+          .insert([{
+            "User Name": username,
+            "Email Id": email,
+            "Password": password,
+            "Role": "Pending",
+            "Approved": false,
+            "Warehouse Access": []
+          }]);
+
+        if (error) {
+          console.error('Supabase error:', error);
+          messageEl.textContent = 'Registration failed. Please try again.';
+          messageEl.className = 'error';
+        } else {
+          messageEl.textContent = '✅ Registration successful! Awaiting admin approval.';
+          messageEl.className = 'success';
+          document.getElementById('username').value = '';
+          document.getElementById('email').value = '';
+          document.getElementById('password').value = '';
+          document.getElementById('confirm-password').value = '';
+        }
+
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        messageEl.textContent = 'Something went wrong. Please try again.';
+        messageEl.className = 'error';
       }
     }
   </script>
+
 </body>
 </html>
