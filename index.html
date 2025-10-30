@@ -168,7 +168,7 @@
 
       try {
         const { data, error } = await supabaseClient
-          .from('Login Credentials')
+          .from('Login Credientials')
           .select('"User Name", "Email Id", "Password", "Role", "Team"')
           .eq('Email Id', email)
           .single();
