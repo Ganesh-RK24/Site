@@ -1,90 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Warehouse Audit Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard</title>
   <style>
-    body {
+    /* Reset and base */
+    body, html {
       margin: 0;
-      font-family: 'Roboto', sans-serif;
-      display: flex;
-      min-height: 100vh;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
       background-color: #f4f6f8;
     }
 
-    /* Side Panel */
+    /* Sidebar */
     .side-panel {
-      width: 260px;
-      background-color: #1f2937;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
       position: fixed;
       top: 0;
+      left: 0;
       bottom: 0;
+      width: 260px;
+      background-color: #1f2937; /* dark blue-gray */
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
       overflow-y: auto;
-    }
-
-    .side-panel h2 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 30px;
-      cursor: pointer;
-      color: #f3f4f6;
-    }
-
-    .side-panel a {
-      display: block;
-      text-decoration: none;
-      color: #d1d5db;
-      font-size: 16px;
-      margin: 10px 0;
-      padding: 12px 15px;
-      border-radius: 6px;
-      transition: all 0.3s;
-      cursor: pointer;
-    }
-
-    .side-panel a:hover {
-      background-color: #374151;
-      color: #fff;
-    }
-
-    .side-panel .logout {
-      margin-top: auto;
-      background-color: #ef4444;
-      text-align: center;
-      font-weight: 500;
-    }
-
-    /* Main Panel */
-    .main-panel {
-      margin-left: 260px;
-      flex-grow: 1;
+      z-index: 1000;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-      transition: all 0.3s;
+    }
+    .side-panel h2 {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .side-panel a {
+      text-decoration: none;
+      color: white;
+      font-size: 16px;
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+    }
+    .side-panel a:hover {
+      background-color: #374151; /* lighter blue-gray */
+    }
+    .side-panel .logout {
+      margin-top: auto;
+      background-color: #e53e3e; /* red */
+      text-align: center;
+      font-weight: bold;
+      user-select: none;
+    }
+    .side-panel .logout:hover {
+      background-color: #c53030;
     }
 
+    /* Main panel shifted right by sidebar width */
+    .main-panel {
+      margin-left: 260px;
+      padding: 20px;
+      height: 100vh;
+      box-sizing: border-box;
+      overflow-y: auto;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
     .main-panel h1 {
       font-size: 28px;
-      margin: 20px;
-      font-weight: 700;
-      color: #111827;
+      color: #1f2937;
+      margin: 0 0 20px 0;
+      user-select: none;
     }
 
+    /* Content area with iframe fills remaining space */
     #content-area {
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      margin: 0 20px 20px 20px;
-      overflow: hidden;
-      border-radius: 8px;
     }
 
     iframe {
@@ -92,25 +93,12 @@
       height: 100%;
       border: none;
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      flex-grow: 1;
+      min-height: 500px; /* fallback height */
     }
 
-    /* Card Layout */
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .card img {
-      width: 100%;
-      border-radius: 6px;
-      margin-bottom: 15px;
-    }
-
-    @media(max-width: 768px) {
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
       .side-panel {
         width: 200px;
       }
@@ -118,26 +106,19 @@
         margin-left: 200px;
       }
     }
-
-    @media(max-width: 480px) {
-      body {
-        flex-direction: column;
-      }
+    @media (max-width: 480px) {
       .side-panel {
+        position: relative;
         width: 100%;
         height: auto;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 10px;
-      }
-      .side-panel a {
-        margin: 5px;
-        padding: 8px 10px;
-        font-size: 14px;
       }
       .main-panel {
         margin-left: 0;
+        padding: 10px;
         height: auto;
+      }
+      iframe {
+        height: 400px;
       }
     }
   </style>
@@ -146,12 +127,12 @@
 
   <div class="side-panel">
     <h2 onclick="showWelcome()">Dashboard</h2>
-    <a href="#" id="link-master-reports" onclick="showMasterReports()">Master Reports</a>
+    <a href="#" id="link-master-reports">Master Reports</a>
     <a href="#" id="link-audit-reports" onclick="showAuditorReports()">Auditor Reports</a>
-    <a href="#" id="link-payments" onclick="showPayments()">Payments</a>
+    <a href="#" id="link-payments">Payments</a>
     <a href="#" id="link-user-settings" onclick="showUserSettings()">User Settings</a>
-    <a href="#" id="link-notifications" onclick="showNotifications()">Notifications</a>
-    <a href="#" id="link-help" onclick="showHelp()">Help</a>
+    <a href="#" id="link-notifications">Notifications</a>
+    <a href="#" id="link-help">Help</a>
     <a class="logout" onclick="logout()">Logout</a>
   </div>
 
@@ -161,26 +142,27 @@
   </div>
 
   <script>
-    // Prevent unauthorized access
+    // Check for logged-in user info in localStorage
     const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
     if (!loggedInUser || !loggedInUser.username) {
-      window.location.href = 'index.html';
+      window.location.href = 'index.html'; // redirect if not logged in
     }
 
     const role = loggedInUser.role;
 
-    // Role-based access rights
+    // Define access rights by role
     const accessRights = {
-      'Owner': ['User Settings','Master Reports','Auditor Reports','Payments','Notifications','Help'],
-      'Admin': ['User Settings','Master Reports','Auditor Reports','Payments','Notifications','Help'],
-      'Executive': ['Master Reports','Auditor Reports','Payments','Notifications','Help'],
-      'Team Leader': ['Master Reports','Notifications','Help'],
-      'Team Member': ['Notifications','Help'],
-      'Employee': ['Notifications','Help']
+      'Owner': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Admin': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Executive': ['Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Team Leader': ['Master Reports', 'Notifications', 'Help'],
+      'Team Member': ['Notifications', 'Help'],
+      'Employee': ['Notifications', 'Help']
     };
 
+    // Hide/show sidebar links depending on role
     function restrictLinks() {
-      const links = {
+      const allLinks = {
         "User Settings": document.getElementById('link-user-settings'),
         "Master Reports": document.getElementById('link-master-reports'),
         "Auditor Reports": document.getElementById('link-audit-reports'),
@@ -191,43 +173,42 @@
 
       const allowedLinks = accessRights[role] || [];
 
-      for (const [name, elem] of Object.entries(links)) {
-        elem.style.display = allowedLinks.includes(name) ? 'block' : 'none';
+      for (const [name, elem] of Object.entries(allLinks)) {
+        if (!allowedLinks.includes(name)) {
+          elem.style.display = 'none';
+        } else {
+          elem.style.display = 'block';
+        }
       }
     }
 
     restrictLinks();
 
-    // Load welcome dashboard with image and iframe
+    // Show dashboard welcome and Power BI iframe
     function showWelcome() {
       document.getElementById('welcome').textContent = `Welcome, ${loggedInUser.username}`;
       document.getElementById('content-area').innerHTML = `
-        <div class="card">
-          <img src="https://warehousingetc.com/wp-content/uploads/2021/03/Warehouse-Audit-Details-768x432.png" alt="Warehouse Audit">
-          <p>Get insights on warehouse operations and audits.</p>
-        </div>
         <iframe 
           title="Warehouse Audit Dashboard" 
           src="https://app.powerbi.com/view?r=eyJrIjoiMGJmM2FmMTYtYjVmNi00YjM1LWI5MGMtMzA1ZGY3NjA5MzM5IiwidCI6ImQzNTZhZjUzLWYzNWYtNGVmZi04NmU1LTVjNjc2MzEzZTRlNCIsImMiOjEwfQ%3D%3D" 
-          allowFullScreen>
-        </iframe>`;
+          allowfullscreen>
+        </iframe>
+      `;
     }
 
-    function showMasterReports() {
-      document.getElementById('welcome').textContent = 'Master Reports';
-      document.getElementById('content-area').innerHTML = `<p>Master Reports content goes here...</p>`;
-    }
-
+    // Show auditor reports iframe
     function showAuditorReports() {
       document.getElementById('welcome').textContent = 'Auditor Reports';
       document.getElementById('content-area').innerHTML = `
         <iframe 
           title="Auditor Data" 
           src="Auditor_Data.html" 
-          allowFullScreen>
-        </iframe>`;
+          allowfullscreen>
+        </iframe>
+      `;
     }
 
+    // Show user settings content (restricted access)
     function showUserSettings() {
       if (role !== 'Owner' && role !== 'Admin') {
         alert('Access Denied: You do not have permission to access User Settings.');
@@ -237,33 +218,20 @@
       document.getElementById('content-area').innerHTML = `<p>Manage users here...</p>`;
     }
 
-    function showPayments() {
-      document.getElementById('welcome').textContent = 'Payments';
-      document.getElementById('content-area').innerHTML = `<p>Payment details here...</p>`;
-    }
-
-    function showNotifications() {
-      document.getElementById('welcome').textContent = 'Notifications';
-      document.getElementById('content-area').innerHTML = `<p>Your notifications here...</p>`;
-    }
-
-    function showHelp() {
-      document.getElementById('welcome').textContent = 'Help';
-      document.getElementById('content-area').innerHTML = `<p>Help & support content here...</p>`;
-    }
-
+    // Logout function clears user data and redirects
     function logout() {
       localStorage.removeItem('loggedInUser');
       window.location.href = 'index.html';
     }
 
+    // Load dashboard on page load
     window.onload = function() {
       if (!loggedInUser || !loggedInUser.username) {
         window.location.href = 'index.html';
       } else {
         showWelcome();
       }
-    }
+    };
   </script>
 
 </body>
