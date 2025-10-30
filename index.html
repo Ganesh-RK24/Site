@@ -2,127 +2,148 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login | Warehouse Access Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | Warehouse Audit System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1f3b4d, #2c5364);
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
       color: #fff;
     }
 
     .container {
-      display: flex;
       background: #fff;
       color: #333;
-      border-radius: 12px;
-      box-shadow: 0 4px 25px rgba(0,0,0,0.4);
-      overflow: hidden;
+      border-radius: 16px;
       width: 850px;
       max-width: 95%;
+      display: flex;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
     }
 
-    /* Left Panel with Image */
     .left-panel {
       flex: 1;
-      background: url('https://images.unsplash.com/photo-1581091870622-5c1d70e7d2e1?auto=format&fit=crop&w=900&q=80') center/cover no-repeat;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: flex-start;
-      padding: 40px;
+      background: url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80') no-repeat center center/cover;
       position: relative;
-    }
-
-    .left-panel::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 1;
-    }
-
-    .left-panel h1, .left-panel p {
-      position: relative;
-      z-index: 2;
-    }
-
-    .left-panel h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .left-panel p {
-      font-size: 16px;
-      max-width: 280px;
-      line-height: 1.5;
-      opacity: 0.9;
-    }
-
-    /* Right Login Box */
-    .login-box {
-      flex: 1;
-      padding: 50px 40px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      padding: 40px;
+      color: #fff;
+      text-shadow: 0 0 15px rgba(0,0,0,0.7);
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(28, 48, 69, 0.75);
+      z-index: 0;
+      border-radius: 16px 0 0 16px;
+    }
+
+    .left-panel h1,
+    .left-panel p {
+      position: relative;
+      z-index: 1;
+    }
+
+    .left-panel h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .left-panel p {
+      font-size: 18px;
+      max-width: 280px;
+      line-height: 1.4;
+      opacity: 0.9;
+    }
+
+    .login-box {
+      flex: 1;
+      padding: 40px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: #f9f9f9;
+      border-radius: 0 16px 16px 0;
+      color: #333;
     }
 
     .login-box h2 {
-      margin-bottom: 25px;
-      color: #1e3c72;
+      margin-bottom: 30px;
+      font-weight: 700;
+      font-size: 28px;
       text-align: center;
+      color: #222;
     }
 
     input {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1.8px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 6px #3498db;
     }
 
     button {
       width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: #fff;
+      padding: 14px;
+      background: #3498db;
       border: none;
-      border-radius: 6px;
-      font-size: 16px;
+      border-radius: 8px;
+      font-size: 18px;
+      color: white;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.3s ease;
+      margin-top: 8px;
     }
 
     button:hover {
-      background: linear-gradient(135deg, #2a5298, #1e3c72);
+      background: #2980b9;
     }
 
     .error {
-      color: red;
-      margin-top: 12px;
+      color: #e74c3c;
+      margin-top: 14px;
       text-align: center;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .register-link {
+      margin-top: 22px;
+      font-size: 15px;
       text-align: center;
-      margin-top: 20px;
+      color: #666;
     }
 
     .register-link a {
-      color: #1e3c72;
+      color: #3498db;
       text-decoration: none;
       font-weight: 600;
     }
@@ -131,30 +152,29 @@
       text-decoration: underline;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 720px) {
       .container {
         flex-direction: column;
         width: 95%;
-        height: auto;
       }
-      .left-panel {
-        height: 200px;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
+
+      .left-panel,
+      .login-box {
+        border-radius: 16px 16px 0 0;
       }
-      .left-panel h1, .left-panel p {
-        max-width: 100%;
+
+      .login-box {
+        border-radius: 0 0 16px 16px;
+        padding: 30px 20px;
       }
     }
   </style>
 </head>
 <body>
-
   <div class="container">
     <div class="left-panel">
-      <h1>Warehouse Access Portal</h1>
-      <p>Monitor inventory Audits efficiently, empower auditors, and streamline warehouse Audit control.</p>
+      <h1>Warehouse Audit Management</h1>
+      <p>Streamline and Personalised audit Dashboard, warehouse controls, and audit reporting with ease.</p>
     </div>
 
     <div class="login-box">
@@ -164,7 +184,7 @@
       <button onclick="login()">Login</button>
       <div class="error" id="error-msg"></div>
       <div class="register-link">
-        <p>Don’t have an account? <a href="register.html">Register Now</a></p>
+        <p>Don't have an account? <a href="register.html">Register Now</a></p>
       </div>
     </div>
   </div>
@@ -188,8 +208,8 @@
 
       try {
         const { data, error } = await supabaseClient
-          .from('Login Credientials')
-          .select('"User Name", "Email Id", Password, Role, Approved')
+          .from('Login Credentials')
+          .select('"User Name", "Email Id", Password, Role, Team')
           .eq('Email Id', email)
           .single();
 
@@ -198,23 +218,21 @@
           return;
         }
 
-        if (!data.Approved) {
-          errorMsgEl.textContent = 'Your account is pending admin approval.';
-          return;
-        }
-
         if (data.Password !== password) {
-          errorMsgEl.textContent = 'Incorrect password.';
+          errorMsgEl.textContent = 'Invalid credentials.';
           return;
         }
 
         const user = {
           username: data['User Name'],
           email: data['Email Id'],
-          role: data.Role
+          role: data.Role,
+          team: data.Team
         };
+
         localStorage.setItem('loggedInUser', JSON.stringify(user));
         window.location.href = 'dashboard.html';
+
       } catch (err) {
         console.error(err);
         errorMsgEl.textContent = 'Something went wrong. Please try again.';
@@ -223,4 +241,3 @@
   </script>
 </body>
 </html>
-
