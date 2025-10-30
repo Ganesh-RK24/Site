@@ -1,124 +1,179 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login</title>
+  <title>Login | Warehouse Audit System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #2c3e50, #3498db);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
+      color: #fff;
     }
-    .login-box {
+
+    .container {
+      display: flex;
       background: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      width: 320px;
-      text-align: center;
+      color: #333;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      overflow: hidden;
+      width: 800px;
+      max-width: 95%;
     }
+
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(135deg, #2980b9, #2c3e50);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .left-panel h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .left-panel p {
+      font-size: 16px;
+      max-width: 250px;
+      text-align: center;
+      opacity: 0.9;
+    }
+
+    .login-box {
+      flex: 1;
+      padding: 40px;
+    }
+
     .login-box h2 {
       margin-bottom: 20px;
       color: #333;
+      text-align: center;
     }
-    .login-box input {
+
+    input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 8px 0;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-size: 15px;
     }
-    .login-box button {
+
+    button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background: #3498db;
       color: #fff;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
     }
-    .login-box button:hover {
+
+    button:hover {
       background: #2980b9;
     }
+
     .error {
       color: red;
       margin-top: 12px;
+      text-align: center;
+    }
+
+    .register-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .register-link a {
+      color: #3498db;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-<div class="login-box">
-  <h2>Login</h2>
-  <input type="email" id="email" placeholder="Email Id" required />
-  <input type="password" id="password" placeholder="Password" required />
-  <button onclick="login()">Login</button>
-  <div class="error" id="error-msg"></div>
-</div>
+  <div class="container">
+    <div class="left-panel">
+      <h1>Warehouse Audit System</h1>
+      <p>Securely manage auditor access, warehouses, and reports.</p>
+    </div>
 
-<script>
-  const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';  // ← Replace this
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <div class="login-box">
+      <h2>Login</h2>
+      <input type="email" id="email" placeholder="Email Id" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button onclick="login()">Login</button>
+      <div class="error" id="error-msg"></div>
+      <div class="register-link">
+        <p>Don't have an account? <a href="register.html">Register Now</a></p>
+      </div>
+    </div>
+  </div>
 
-  async function login() {
-    const errorMsgEl = document.getElementById('error-msg');
-    errorMsgEl.textContent = '';
+  <script>
+    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
+    async function login() {
+      const errorMsgEl = document.getElementById('error-msg');
+      errorMsgEl.textContent = '';
 
-    if (!email || !password) {
-      errorMsgEl.textContent = 'Please enter both email and password.';
-      return;
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!email || !password) {
+        errorMsgEl.textContent = 'Please enter both email and password.';
+        return;
+      }
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('Login Credientials')
+          .select('"User Name", "Email Id", Password, Role')
+          .eq('Email Id', email)
+          .single();
+
+        if (error || !data) {
+          errorMsgEl.textContent = 'Invalid credentials or user not found.';
+          return;
+        }
+
+        if (data.Password !== password) {
+          errorMsgEl.textContent = 'Invalid credentials.';
+          return;
+        }
+
+        const user = {
+          username: data['User Name'],
+          email: data['Email Id'],
+          role: data.Role
+        };
+        localStorage.setItem('loggedInUser', JSON.stringify(user));
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        console.error(err);
+        errorMsgEl.textContent = 'Something went wrong. Please try again.';
+      }
     }
-
-    try {
-      const { data, error } = await supabaseClient
-        .from('Login Credientials')
-        .select('"User Name", "Email Id", Password, Role')
-        .eq('Email Id', email)
-        .single();
-
-      if (error) {
-        console.error('Supabase error:', error);
-        errorMsgEl.textContent = 'Invalid credentials or user not found.';
-        return;
-      }
-      if (!data) {
-        errorMsgEl.textContent = 'Invalid credentials.';
-        return;
-      }
-
-      // Compare password (plaintext) — for production use hashed passwords
-      if (data.Password !== password) {
-        errorMsgEl.textContent = 'Invalid credentials.';
-        return;
-      }
-
-      // Save user info to localStorage
-      const user = {
-        username: data['User Name'],
-        email: data['Email Id'],
-        role: data.Role
-      };
-      localStorage.setItem('loggedInUser', JSON.stringify(user));
-
-      // Redirect to dashboard
-      window.location.href = 'dashboard.html';
-    } catch (err) {
-      console.error('Unexpected login error:', err);
-      errorMsgEl.textContent = 'Something went wrong. Please try again.';
-    }
-  }
-</script>
-
+  </script>
 </body>
 </html>
