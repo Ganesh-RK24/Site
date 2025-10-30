@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login | Warehouse Audit System</title>
+  <title>Login | Warehouse Access Portal</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #2c3e50, #3498db);
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -22,43 +22,64 @@
       background: #fff;
       color: #333;
       border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 25px rgba(0,0,0,0.4);
       overflow: hidden;
-      width: 800px;
+      width: 850px;
       max-width: 95%;
     }
 
+    /* Left Panel with Image */
     .left-panel {
       flex: 1;
-      background: linear-gradient(135deg, #2980b9, #2c3e50);
+      background: url('https://images.unsplash.com/photo-1581091870622-5c1d70e7d2e1?auto=format&fit=crop&w=900&q=80') center/cover no-repeat;
       color: #fff;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      justify-content: flex-end;
+      align-items: flex-start;
       padding: 40px;
+      position: relative;
+    }
+
+    .left-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1;
+    }
+
+    .left-panel h1, .left-panel p {
+      position: relative;
+      z-index: 2;
     }
 
     .left-panel h1 {
       font-size: 28px;
       margin-bottom: 10px;
+      font-weight: 600;
+      color: #fff;
     }
 
     .left-panel p {
       font-size: 16px;
-      max-width: 250px;
-      text-align: center;
+      max-width: 280px;
+      line-height: 1.5;
       opacity: 0.9;
     }
 
+    /* Right Login Box */
     .login-box {
       flex: 1;
-      padding: 40px;
+      padding: 50px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .login-box h2 {
-      margin-bottom: 20px;
-      color: #333;
+      margin-bottom: 25px;
+      color: #1e3c72;
       text-align: center;
     }
 
@@ -74,31 +95,34 @@
     button {
       width: 100%;
       padding: 12px;
-      background: #3498db;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: #fff;
       border: none;
       border-radius: 6px;
       font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
 
     button:hover {
-      background: #2980b9;
+      background: linear-gradient(135deg, #2a5298, #1e3c72);
     }
 
     .error {
       color: red;
       margin-top: 12px;
       text-align: center;
+      font-weight: 500;
     }
 
     .register-link {
       text-align: center;
-      margin-top: 15px;
+      margin-top: 20px;
     }
 
     .register-link a {
-      color: #3498db;
+      color: #1e3c72;
       text-decoration: none;
       font-weight: 600;
     }
@@ -106,14 +130,31 @@
     .register-link a:hover {
       text-decoration: underline;
     }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        width: 95%;
+        height: auto;
+      }
+      .left-panel {
+        height: 200px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+      .left-panel h1, .left-panel p {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
     <div class="left-panel">
-      <h1>Warehouse Audit System</h1>
-      <p>Securely manage auditor access, warehouses, and reports.</p>
+      <h1>Warehouse Access Portal</h1>
+      <p>Monitor inventory efficiently, empower auditors, and streamline warehouse control securely.</p>
     </div>
 
     <div class="login-box">
@@ -123,7 +164,7 @@
       <button onclick="login()">Login</button>
       <div class="error" id="error-msg"></div>
       <div class="register-link">
-        <p>Don't have an account? <a href="register.html">Register Now</a></p>
+        <p>Don’t have an account? <a href="register.html">Register Now</a></p>
       </div>
     </div>
   </div>
@@ -148,7 +189,7 @@
       try {
         const { data, error } = await supabaseClient
           .from('Login Credientials')
-          .select('"User Name", "Email Id", Password, Role')
+          .select('"User Name", "Email Id", Password, Role, Approved')
           .eq('Email Id', email)
           .single();
 
@@ -157,8 +198,13 @@
           return;
         }
 
+        if (!data.Approved) {
+          errorMsgEl.textContent = 'Your account is pending admin approval.';
+          return;
+        }
+
         if (data.Password !== password) {
-          errorMsgEl.textContent = 'Invalid credentials.';
+          errorMsgEl.textContent = 'Incorrect password.';
           return;
         }
 
