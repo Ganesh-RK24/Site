@@ -61,8 +61,8 @@
       z-index: 2;
     }
 
-    /* Login form panel */
-    .login-box {
+    /*  form panel */
+    .-box {
       flex: 1;
       padding: 50px 40px;
       display: flex;
@@ -70,7 +70,7 @@
       justify-content: center;
     }
 
-    .login-box h2 {
+    .-box h2 {
       margin-bottom: 30px;
       text-align: center;
       color: #222;
@@ -156,11 +156,11 @@
       <p>Streamline audit dashboards, warehouse controls, and reporting with ease.</p>
     </div>
 
-    <div class="login-box">
-      <h2>Login</h2>
+    <div class="-box">
+      <h2></h2>
       <input type="email" id="email" placeholder="Email Id" required />
       <input type="password" id="password" placeholder="Password" required />
-      <button onclick="login()">Login</button>
+      <button onclick="()"></button>
       <div class="error" id="error-msg"></div>
       <div class="register-link">
         Don’t have an account? <a href="register.html">Register Now</a>
@@ -173,7 +173,7 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function login() {
+    async function () {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
       const errorMsgEl = document.getElementById('error-msg');
@@ -186,7 +186,7 @@
 
       try {
         const { data, error } = await supabaseClient
-          .from('Login Credientials')
+          .from('Login Credentials')
           .select('"User Name", "Email Id", "Password", "Role", "Team"')
           .eq('Email Id', email)
           .single();
@@ -219,3 +219,4 @@
   </script>
 </body>
 </html>
+
