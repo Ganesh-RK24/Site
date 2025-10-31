@@ -6,30 +6,13 @@
   <title>User Settings</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    /* Base reset */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-    body {
-      background-color: #f4f6f8;
-      padding: 20px;
-    }
+    body { background-color: #f4f6f8; padding: 20px; }
 
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+    .container { max-width: 1000px; margin: 0 auto; }
 
-    h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
-      color: #1f2937;
-      display: inline-block;
-    }
+    h1 { font-size: 28px; margin-bottom: 20px; color: #1f2937; display: inline-block; }
 
     .back-button {
       float: right;
@@ -42,10 +25,7 @@
       font-size: 14px;
       transition: background-color 0.3s;
     }
-
-    .back-button:hover {
-      background-color: #374151;
-    }
+    .back-button:hover { background-color: #374151; }
 
     .user-settings-container {
       background-color: white;
@@ -55,22 +35,20 @@
       margin-top: 60px;
     }
 
-    table {
+    .search-box { margin-bottom: 15px; }
+    .search-box input {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
     }
 
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #e5e7eb;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background-color: #f1f5f9; font-weight: 600; }
 
-    th {
-      background-color: #f1f5f9;
-      font-weight: 600;
-    }
+    input.editable { width: 95%; padding: 6px; border-radius: 4px; border: 1px solid #d1d5db; }
 
     select[multiple] {
       width: 100%;
@@ -92,17 +70,10 @@
       font-size: 16px;
       transition: background-color 0.3s;
     }
-
-    button.save-button:hover {
-      background-color: #059669;
-    }
+    button.save-button:hover { background-color: #059669; }
 
     @media (max-width: 768px) {
-      .back-button {
-        float: none;
-        display: block;
-        margin-bottom: 10px;
-      }
+      .back-button { float: none; display: block; margin-bottom: 10px; }
     }
   </style>
 </head>
@@ -113,7 +84,9 @@
   <button class="back-button" onclick="goBack()">← Back to Dashboard</button>
 
   <div class="user-settings-container">
-    <p>Assign warehouse access to users:</p>
+    <div class="search-box">
+      <input type="text" id="search-user" placeholder="Search by username..." oninput="filterUsers()">
+    </div>
 
     <table id="users-table">
       <thead>
@@ -129,27 +102,28 @@
       </tbody>
     </table>
 
-    <button class="save-button" onclick="saveWarehouseAccess()">Save Changes</button>
+    <button class="save-button" onclick="saveChanges()">Save Changes</button>
   </div>
 </div>
 
 <script>
   // Supabase setup
   const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY'; // Use anon key, not service role key on client
+  const SUPABASE_KEY = 'YOUR_ANON_KEY'; // client anon key
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const warehouses = ["WH01", "WH03", "WH04", "WH06", "WH09", "WH11", "WH12"];
+  const warehouses = ["WH-001", "WH-002", "WH-003", "WH-004", "WH-005"];
   let users = [];
+  let filteredUsers = [];
 
   async function loadUsers() {
     const { data, error } = await supabase
       .from('Login Credentials')
-      .select('id, "User Name", "Email Id", Role, "Warehouse Access"');
+      .select('*'); // fetch all columns
 
     if (error) {
-      console.error('Error loading users:', error.message);
-      alert('Failed to load users from database.');
+      console.error('Error fetching users:', error);
+      alert('Failed to load users.');
       return;
     }
 
@@ -161,6 +135,7 @@
       warehouses: u["Warehouse Access"] || []
     }));
 
+    filteredUsers = [...users];
     renderUsers();
   }
 
@@ -168,14 +143,19 @@
     const tbody = document.querySelector('#users-table tbody');
     tbody.innerHTML = '';
 
-    users.forEach((user, index) => {
+    filteredUsers.forEach((user, index) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${user.username}</td>
-        <td>${user.email}</td>
-        <td>${user.role}</td>
+        <td><input class="editable" type="text" value="${user.username}" data-index="${index}" data-field="username"></td>
+        <td><input class="editable" type="email" value="${user.email}" data-index="${index}" data-field="email"></td>
         <td>
-          <select multiple data-index="${index}">
+          <select data-index="${index}" data-field="role">
+            ${["Owner","Admin","Executive","Team Leader","Team Member","Employee"].map(r => 
+              `<option value="${r}" ${user.role === r ? 'selected' : ''}>${r}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select multiple data-index="${index}" data-field="warehouses">
             ${warehouses.map(wh => `<option value="${wh}" ${user.warehouses.includes(wh) ? 'selected' : ''}>${wh}</option>`).join('')}
           </select>
         </td>
@@ -184,37 +164,52 @@
     });
   }
 
-  async function saveWarehouseAccess() {
-    const selects = document.querySelectorAll('select[multiple]');
+  function filterUsers() {
+    const query = document.getElementById('search-user').value.toLowerCase();
+    filteredUsers = users.filter(u => u.username.toLowerCase().includes(query));
+    renderUsers();
+  }
 
-    for (const select of selects) {
-      const index = +select.getAttribute('data-index');
-      const selectedWarehouses = Array.from(select.selectedOptions).map(o => o.value);
-      const user = users[index];
+  async function saveChanges() {
+    const tbody = document.querySelector('#users-table tbody');
+    const rows = tbody.querySelectorAll('tr');
 
-      if (JSON.stringify(selectedWarehouses) !== JSON.stringify(user.warehouses)) {
-        const { data, error } = await supabase
-          .from('Login Credentials')
-          .update({ "Warehouse Access": selectedWarehouses })
-          .eq('id', user.id);
+    for (let i = 0; i < rows.length; i++) {
+      const index = rows[i].querySelector('input, select').getAttribute('data-index');
+      const user = filteredUsers[index];
 
-        if (error) {
-          alert(`❌ Failed to update ${user.username}: ${error.message}`);
-          console.error(error);
-        } else {
-          user.warehouses = selectedWarehouses;
-        }
+      // Update editable fields
+      user.username = rows[i].querySelector('input[data-field="username"]').value;
+      user.email = rows[i].querySelector('input[data-field="email"]').value;
+      user.role = rows[i].querySelector('select[data-field="role"]').value;
+      const selectedWarehouses = Array.from(rows[i].querySelector('select[data-field="warehouses"]').selectedOptions)
+        .map(opt => opt.value);
+      user.warehouses = selectedWarehouses;
+
+      const { error } = await supabase
+        .from('Login Credentials')
+        .update({
+          "User Name": user.username,
+          "Email Id": user.email,
+          "Role": user.role,
+          "Warehouse Access": user.warehouses
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error(`Error updating ${user.username}:`, error);
+        alert(`Failed to update ${user.username}`);
       }
     }
 
-    alert('✅ Warehouse access updated successfully!');
+    alert('✅ All changes saved successfully!');
+    await loadUsers();
   }
 
   function goBack() {
-    window.location.href = 'dashboard.html'; // replace with your actual dashboard path
+    window.location.href = 'dashboard.html';
   }
 
-  // Load users on page load
   window.onload = loadUsers;
 </script>
 
