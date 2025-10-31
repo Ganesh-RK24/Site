@@ -6,32 +6,34 @@
   <title>Login | Warehouse Audit System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
+    /* Full page background */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f2f5;
       margin: 0;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      background: url('https://images.pexels.com/photos/256381/pexels-photo-256381.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940') no-repeat center center/cover;
     }
 
+    /* Container */
     .container {
       display: flex;
       width: 850px;
       max-width: 95%;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       overflow: hidden;
       min-height: 450px;
     }
 
-    /* Left image panel */
+    /* Left panel with textile/fashion warehouse image */
     .left-panel {
       flex: 1;
       background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
-                  url('https://images.pexels.com/photos/3951928/warehouse-logistics-intensive-warehouse-3951928.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940')
+                  url('https://mecaluxcom.cdnwm.com/blog/img/warehouse-clothing-racking.1.13.jpg?imdensity=1&imwidth=1024') 
                   no-repeat center center/cover;
       color: #fff;
       padding: 40px 30px;
@@ -46,7 +48,6 @@
       font-size: 28px;
       margin-bottom: 15px;
       font-weight: 700;
-      line-height: 1.2;
     }
 
     .left-panel p {
@@ -160,16 +161,19 @@
 </head>
 <body>
   <div class="container">
+    <!-- Left Panel -->
     <div class="left-panel">
       <h1>Warehouse Audit Management</h1>
       <p>Streamline audit dashboards, warehouse controls, and reporting with ease.</p>
     </div>
 
+    <!-- Login Box -->
     <div class="login-box">
       <h2>Login</h2>
       <div id="error-msg" class="error"></div>
+
       <input type="email" id="email" placeholder="Email" required />
-      
+
       <div class="password-wrapper">
         <input type="password" id="password" placeholder="Password" required />
         <span class="toggle-password" onclick="togglePassword()">Show</span>
@@ -177,10 +181,18 @@
 
       <button onclick="login()">Login</button>
 
+      <!-- Forgot Password -->
       <div class="forgot-link">
-        <a onclick="forgotPassword()">Forgot Password?</a>
+        <a id="forgot-link">Forgot Password?</a>
       </div>
 
+      <div id="forgot-form" style="display:none; margin-top:10px;">
+        <input type="email" id="reset-email" placeholder="Enter your email for reset" />
+        <button onclick="sendResetEmail()">Send Reset Link</button>
+        <div id="reset-msg" class="error" style="margin-top:5px;"></div>
+      </div>
+
+      <!-- Register Link -->
       <div class="register-link">
         Don't have an account? <a href="register.html">Register</a>
       </div>
@@ -188,13 +200,17 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const passwordInput = document.getElementById('password');
     const togglePasswordEl = document.querySelector('.toggle-password');
+    const forgotLink = document.getElementById('forgot-link');
+    const forgotForm = document.getElementById('forgot-form');
+    const resetMsg = document.getElementById('reset-msg');
 
+    // Toggle password visibility
     function togglePassword() {
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
@@ -205,6 +221,13 @@
       }
     }
 
+    // Toggle forgot password form
+    forgotLink.addEventListener('click', () => {
+      forgotForm.style.display = forgotForm.style.display === 'none' ? 'block' : 'none';
+      resetMsg.textContent = '';
+    });
+
+    // Login function
     async function login() {
       const errorMsgEl = document.getElementById('error-msg');
       errorMsgEl.textContent = '';
@@ -218,10 +241,7 @@
       }
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error || !data?.user) {
           errorMsgEl.textContent = 'Invalid credentials or user not found.';
@@ -235,20 +255,27 @@
       }
     }
 
-    async function forgotPassword() {
-      const email = prompt("Enter your registered email for password reset:");
-      if (!email) return;
+    // Send password reset email
+    async function sendResetEmail() {
+      const email = document.getElementById('reset-email').value.trim();
+      resetMsg.textContent = '';
+
+      if (!email) {
+        resetMsg.textContent = 'Please enter your email.';
+        return;
+      }
 
       try {
         const { data, error } = await supabase.auth.resetPasswordForEmail(email);
         if (error) {
-          alert("Error: " + error.message);
+          resetMsg.textContent = 'Error: ' + error.message;
         } else {
-          alert("Password reset email sent! Check your inbox.");
+          resetMsg.style.color = 'green';
+          resetMsg.textContent = 'Password reset email sent! Check your inbox.';
         }
       } catch (err) {
         console.error(err);
-        alert("Something went wrong. Please try again.");
+        resetMsg.textContent = 'Something went wrong. Please try again.';
       }
     }
   </script>
