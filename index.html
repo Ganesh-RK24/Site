@@ -2,24 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login | Warehouse Audit System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
       margin: 0;
-      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg, #1f3a93, #4a69bd);
-      color: #333;
+      min-height: 100vh;
     }
 
     .container {
       display: flex;
-      width: 800px;
+      width: 850px;
       max-width: 95%;
       background: #fff;
       border-radius: 12px;
@@ -28,17 +27,19 @@
       min-height: 450px;
     }
 
+    /* Left image panel */
     .left-panel {
       flex: 1;
-      background: url('https://warehousingetc.com/wp-content/uploads/2021/03/Warehouse‑Audit‑Details‑768x432.png') no-repeat center center/cover;
-      color: Black;
+      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+                  url('https://images.pexels.com/photos/3951928/warehouse-logistics-intensive-warehouse-3951928.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940')
+                  no-repeat center center/cover;
+      color: #fff;
       padding: 40px 30px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       border-top-left-radius: 12px;
       border-bottom-left-radius: 12px;
-      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
     }
 
     .left-panel h1 {
@@ -55,9 +56,10 @@
       opacity: 0.9;
     }
 
+    /* Login form panel */
     .login-box {
       flex: 1;
-      padding: 40px 50px;
+      padding: 50px 40px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -65,68 +67,94 @@
 
     .login-box h2 {
       margin-bottom: 30px;
-      text-align: center;
-      color: #222;
-      font-weight: 700;
       font-size: 26px;
+      font-weight: 700;
+      color: #333;
     }
 
     input {
-      width: 100%;
-      padding: 14px 12px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
+      padding: 14px;
       border: 1.5px solid #ddd;
       border-radius: 8px;
       font-size: 16px;
-      transition: border-color 0.3s ease;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     input:focus {
       border-color: #4a69bd;
+      box-shadow: 0 0 5px rgba(74, 105, 189, 0.5);
       outline: none;
-      box-shadow: 0 0 8px #4a69bdaa;
+    }
+
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #4a69bd;
+      user-select: none;
     }
 
     button {
       width: 100%;
       padding: 14px 0;
-      background-color: #4a69bd;
+      background: linear-gradient(135deg, #1f3a93, #4a69bd);
       border: none;
       border-radius: 8px;
-      color: white;
+      color: #fff;
       font-size: 18px;
       font-weight: 700;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background 0.3s ease;
+      margin-top: 10px;
     }
 
     button:hover {
-      background-color: #3b4d8a;
+      background: linear-gradient(135deg, #4a69bd, #1f3a93);
     }
 
     .error {
-      color: #e74c3c;
-      margin-top: 12px;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .register-link {
-      margin-top: 22px;
-      text-align: center;
+      color: red;
+      margin-bottom: 15px;
       font-size: 14px;
-      color: #555;
     }
 
-    .register-link a {
+    .register-link, .forgot-link {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .register-link a, .forgot-link a {
       color: #4a69bd;
       font-weight: 700;
       text-decoration: none;
       cursor: pointer;
     }
 
-    .register-link a:hover {
+    .register-link a:hover, .forgot-link a:hover {
       text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      .left-panel {
+        height: 200px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        border-radius: 12px 12px 0 0;
+      }
     }
   </style>
 </head>
@@ -134,17 +162,27 @@
   <div class="container">
     <div class="left-panel">
       <h1>Warehouse Audit Management</h1>
-      <p>Streamline and personalize audit dashboards, warehouse controls, and audit reporting with ease.</p>
+      <p>Streamline audit dashboards, warehouse controls, and reporting with ease.</p>
     </div>
 
     <div class="login-box">
       <h2>Login</h2>
-      <input type="email" id="email" placeholder="Email Id" required />
-      <input type="password" id="password" placeholder="Password" required />
+      <div id="error-msg" class="error"></div>
+      <input type="email" id="email" placeholder="Email" required />
+      
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password" required />
+        <span class="toggle-password" onclick="togglePassword()">Show</span>
+      </div>
+
       <button onclick="login()">Login</button>
-      <div class="error" id="error-msg"></div>
+
+      <div class="forgot-link">
+        <a onclick="forgotPassword()">Forgot Password?</a>
+      </div>
+
       <div class="register-link">
-        Don’t have an account? <a href="register.html">Register Now</a>
+        Don't have an account? <a href="register.html">Register</a>
       </div>
     </div>
   </div>
@@ -152,14 +190,27 @@
   <script>
     const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const passwordInput = document.getElementById('password');
+    const togglePasswordEl = document.querySelector('.toggle-password');
+
+    function togglePassword() {
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        togglePasswordEl.textContent = 'Hide';
+      } else {
+        passwordInput.type = 'password';
+        togglePasswordEl.textContent = 'Show';
+      }
+    }
 
     async function login() {
       const errorMsgEl = document.getElementById('error-msg');
       errorMsgEl.textContent = '';
 
       const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+      const password = passwordInput.value.trim();
 
       if (!email || !password) {
         errorMsgEl.textContent = 'Please enter both email and password.';
@@ -167,41 +218,39 @@
       }
 
       try {
-        const { data, error } = await supabaseClient
-          .from('Login Credentials')
-          .select('"User Name", "Email Id", "Password", "Role", "Team"')
-          .eq('Email Id', email)
-          .single();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-        console.log('Supabase query error:', error);
-        console.log('Supabase query data:', data);
-
-        if (error || !data) {
+        if (error || !data?.user) {
           errorMsgEl.textContent = 'Invalid credentials or user not found.';
           return;
         }
 
-        if (data.Password !== password) {
-          errorMsgEl.textContent = 'Invalid credentials.';
-          return;
-        }
-
-        const user = {
-          username: data['User Name'],
-          email: data['Email Id'],
-          role: data.Role,
-          team: data.Team
-        };
-
-        localStorage.setItem('loggedInUser', JSON.stringify(user));
         window.location.href = 'dashboard.html';
-
       } catch (err) {
-        console.error('Catch error:', err);
+        console.error('Login error:', err);
         errorMsgEl.textContent = 'Something went wrong. Please try again.';
+      }
+    }
+
+    async function forgotPassword() {
+      const email = prompt("Enter your registered email for password reset:");
+      if (!email) return;
+
+      try {
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+        if (error) {
+          alert("Error: " + error.message);
+        } else {
+          alert("Password reset email sent! Check your inbox.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong. Please try again.");
       }
     }
   </script>
 </body>
 </html>
-
