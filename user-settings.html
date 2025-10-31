@@ -4,25 +4,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Settings</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
+    /* Base reset */
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f8;
       padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
     }
 
     h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
       color: #1f2937;
+      display: inline-block;
+    }
+
+    .back-button {
+      float: right;
+      padding: 8px 16px;
+      background-color: #1f2937;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .back-button:hover {
+      background-color: #374151;
     }
 
     .user-settings-container {
-      background: white;
+      background-color: white;
       padding: 20px;
-      border-radius: 8px;
-      max-width: 800px;
-      margin: 20px auto;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-top: 60px;
     }
 
     table {
@@ -32,82 +62,121 @@
     }
 
     th, td {
-      padding: 10px;
+      padding: 12px;
       text-align: left;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     th {
       background-color: #f1f5f9;
+      font-weight: 600;
     }
 
     select[multiple] {
       width: 100%;
-      height: 80px;
+      min-height: 80px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
     }
 
-    button {
+    button.save-button {
       margin-top: 15px;
-      padding: 10px 20px;
-      background-color: #1f2937;
+      padding: 12px 25px;
+      background-color: #10b981;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
     }
 
-    button:hover {
-      background-color: #374151;
+    button.save-button:hover {
+      background-color: #059669;
+    }
+
+    @media (max-width: 768px) {
+      .back-button {
+        float: none;
+        display: block;
+        margin-bottom: 10px;
+      }
     }
   </style>
 </head>
 <body>
 
-<div class="user-settings-container">
+<div class="container">
   <h1>User Settings</h1>
-  <p>Assign warehouse access to users:</p>
+  <button class="back-button" onclick="goBack()">← Back to Dashboard</button>
 
-  <table id="users-table">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Warehouse Access</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Users will be dynamically loaded here -->
-    </tbody>
-  </table>
-  <button onclick="saveWarehouseAccess()">Save Changes</button>
+  <div class="user-settings-container">
+    <p>Assign warehouse access to users:</p>
+
+    <table id="users-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Warehouse Access</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Users dynamically loaded here -->
+      </tbody>
+    </table>
+
+    <button class="save-button" onclick="saveWarehouseAccess()">Save Changes</button>
+  </div>
 </div>
 
 <script>
-  // Dummy warehouse list
-  const warehouses = ["WH-001", "WH-002", "WH-003", "WH-004", "WH-005"];
+  // Supabase setup
+  const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY'; // Use anon key, not service role key on client
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // Load users from localStorage (replace with DB fetch in future)
-  let users = JSON.parse(localStorage.getItem('allUsers')) || [
-    { username: "admin", email: "admin@test.com", role: "Admin", warehouses: [] },
-    { username: "owner", email: "owner@test.com", role: "Owner", warehouses: [] },
-    { username: "employee1", email: "emp1@test.com", role: "Employee", warehouses: [] }
-  ];
+  const warehouses = ["WH01", "WH03", "WH04", "WH06", "WH09", "WH11", "WH12"];
+  let users = [];
 
-  const tbody = document.querySelector("#users-table tbody");
+  async function loadUsers() {
+    const { data, error } = await supabase
+      .from('Login Credentials')
+      .select('id, "User Name", "Email Id", Role, "Warehouse Access"');
+
+    if (error) {
+      console.error('Error loading users:', error.message);
+      alert('Failed to load users from database.');
+      return;
+    }
+
+    users = data.map(u => ({
+      id: u.id,
+      username: u["User Name"],
+      email: u["Email Id"],
+      role: u.Role,
+      warehouses: u["Warehouse Access"] || []
+    }));
+
+    renderUsers();
+  }
 
   function renderUsers() {
-    tbody.innerHTML = "";
-    users.forEach((user, index) => {
-      const tr = document.createElement("tr");
+    const tbody = document.querySelector('#users-table tbody');
+    tbody.innerHTML = '';
 
+    users.forEach((user, index) => {
+      const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${user.username}</td>
         <td>${user.email}</td>
         <td>${user.role}</td>
         <td>
           <select multiple data-index="${index}">
-            ${warehouses.map(wh => `<option value="${wh}" ${user.warehouses.includes(wh) ? "selected" : ""}>${wh}</option>`).join('')}
+            ${warehouses.map(wh => `<option value="${wh}" ${user.warehouses.includes(wh) ? 'selected' : ''}>${wh}</option>`).join('')}
           </select>
         </td>
       `;
@@ -115,21 +184,38 @@
     });
   }
 
-  function saveWarehouseAccess() {
-    const selects = document.querySelectorAll("select[multiple]");
-    selects.forEach(select => {
-      const index = select.getAttribute("data-index");
-      const selected = Array.from(select.selectedOptions).map(option => option.value);
-      users[index].warehouses = selected;
-    });
+  async function saveWarehouseAccess() {
+    const selects = document.querySelectorAll('select[multiple]');
 
-    localStorage.setItem("allUsers", JSON.stringify(users));
-    alert("✅ Warehouse access updated successfully!");
+    for (const select of selects) {
+      const index = +select.getAttribute('data-index');
+      const selectedWarehouses = Array.from(select.selectedOptions).map(o => o.value);
+      const user = users[index];
+
+      if (JSON.stringify(selectedWarehouses) !== JSON.stringify(user.warehouses)) {
+        const { data, error } = await supabase
+          .from('Login Credentials')
+          .update({ "Warehouse Access": selectedWarehouses })
+          .eq('id', user.id);
+
+        if (error) {
+          alert(`❌ Failed to update ${user.username}: ${error.message}`);
+          console.error(error);
+        } else {
+          user.warehouses = selectedWarehouses;
+        }
+      }
+    }
+
+    alert('✅ Warehouse access updated successfully!');
   }
 
-  // Render users on page load
-  renderUsers();
+  function goBack() {
+    window.location.href = 'dashboard.html'; // replace with your actual dashboard path
+  }
 
+  // Load users on page load
+  window.onload = loadUsers;
 </script>
 
 </body>
