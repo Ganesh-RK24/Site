@@ -6,126 +6,55 @@
   <title>User Settings</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
-    body { background-color: #f4f6f8; padding: 20px; }
-
-    .container { max-width: 1000px; margin: 0 auto; }
-
-    h1 { font-size: 28px; margin-bottom: 20px; color: #1f2937; display: inline-block; }
-
-    .back-button {
-      float: right;
-      padding: 8px 16px;
-      background-color: #1f2937;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.3s;
-    }
-    .back-button:hover { background-color: #374151; }
-
-    .user-settings-container {
-      background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      margin-top: 60px;
-    }
-
-    .search-box { margin-bottom: 15px; }
-    .search-box input {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #d1d5db;
-      font-size: 14px;
-    }
-
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-    th { background-color: #f1f5f9; font-weight: 600; }
-
-    input.editable { width: 95%; padding: 6px; border-radius: 4px; border: 1px solid #d1d5db; }
-
-    select[multiple] {
-      width: 100%;
-      min-height: 80px;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #d1d5db;
-      font-size: 14px;
-    }
-
-    button.save-button {
-      margin-top: 15px;
-      padding: 12px 25px;
-      background-color: #10b981;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s;
-    }
-    button.save-button:hover { background-color: #059669; }
-
-    @media (max-width: 768px) {
-      .back-button { float: none; display: block; margin-bottom: 10px; }
-    }
+    body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px; }
+    h1 { color: #1f2937; margin-bottom: 20px; }
+    .back-button { margin-bottom: 10px; padding: 8px 16px; background: #1f2937; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    .back-button:hover { background: #374151; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+    th { background: #f1f5f9; }
+    input, select { width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #d1d5db; }
+    select[multiple] { min-height: 60px; }
+    button.save-button { margin-top: 15px; padding: 10px 20px; background: #10b981; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    button.save-button:hover { background: #059669; }
+    .search-box { margin-bottom: 15px; padding: 6px 10px; width: 300px; border-radius: 6px; border: 1px solid #d1d5db; }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>User Settings</h1>
-  <button class="back-button" onclick="goBack()">← Back to Dashboard</button>
+<h1>User Settings</h1>
+<button class="back-button" onclick="goBack()">← Back to Dashboard</button>
 
-  <div class="user-settings-container">
-    <div class="search-box">
-      <input type="text" id="search-user" placeholder="Search by username..." oninput="filterUsers()">
-    </div>
+<input type="text" id="searchInput" class="search-box" placeholder="Search by username..." onkeyup="searchUsers()">
 
-    <table id="users-table">
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Warehouse Access</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Users dynamically loaded here -->
-      </tbody>
-    </table>
-
-    <button class="save-button" onclick="saveChanges()">Save Changes</button>
-  </div>
+<div class="user-settings-container">
+  <table id="users-table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Warehouse Access</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button class="save-button" onclick="saveChanges()">Save Changes</button>
 </div>
 
 <script>
-  // Supabase setup
   const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY'; // client anon key
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const warehouses = ["WH-001", "WH-002", "WH-003", "WH-004", "WH-005"];
+  // Default warehouses
+  const warehouses = ["W501", "W503", "W504", "W506", "W509", "W511", "W512"];
   let users = [];
   let filteredUsers = [];
 
   async function loadUsers() {
-    const { data, error } = await supabase
-      .from('Login Credentials')
-      .select('*'); // fetch all columns
-
-    if (error) {
-      console.error('Error fetching users:', error);
-      alert('Failed to load users.');
-      return;
-    }
+    const { data, error } = await supabase.from('Login Credentials').select('*');
+    if (error) { alert('Error fetching users'); console.error(error); return; }
 
     users = data.map(u => ({
       id: u.id,
@@ -142,21 +71,19 @@
   function renderUsers() {
     const tbody = document.querySelector('#users-table tbody');
     tbody.innerHTML = '';
-
-    filteredUsers.forEach((user, index) => {
+    filteredUsers.forEach((user,index)=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><input class="editable" type="text" value="${user.username}" data-index="${index}" data-field="username"></td>
-        <td><input class="editable" type="email" value="${user.email}" data-index="${index}" data-field="email"></td>
+        <td><input type="text" value="${user.username}" data-index="${index}" data-field="username"></td>
+        <td><input type="email" value="${user.email}" data-index="${index}" data-field="email"></td>
         <td>
           <select data-index="${index}" data-field="role">
-            ${["Owner","Admin","Executive","Team Leader","Team Member","Employee"].map(r => 
-              `<option value="${r}" ${user.role === r ? 'selected' : ''}>${r}</option>`).join('')}
+            ${["Owner","Admin","Executive","Team Leader","Team Member","Employee"].map(r=>`<option value="${r}" ${user.role===r?'selected':''}>${r}</option>`).join('')}
           </select>
         </td>
         <td>
           <select multiple data-index="${index}" data-field="warehouses">
-            ${warehouses.map(wh => `<option value="${wh}" ${user.warehouses.includes(wh) ? 'selected' : ''}>${wh}</option>`).join('')}
+            ${warehouses.map(w=>`<option value="${w}" ${user.warehouses.includes(w)?'selected':''}>${w}</option>`).join('')}
           </select>
         </td>
       `;
@@ -164,30 +91,21 @@
     });
   }
 
-  function filterUsers() {
-    const query = document.getElementById('search-user').value.toLowerCase();
-    filteredUsers = users.filter(u => u.username.toLowerCase().includes(query));
-    renderUsers();
-  }
-
   async function saveChanges() {
     const tbody = document.querySelector('#users-table tbody');
     const rows = tbody.querySelectorAll('tr');
 
-    for (let i = 0; i < rows.length; i++) {
+    for (let i=0;i<rows.length;i++) {
       const index = rows[i].querySelector('input, select').getAttribute('data-index');
       const user = filteredUsers[index];
 
-      // Update editable fields
       user.username = rows[i].querySelector('input[data-field="username"]').value;
       user.email = rows[i].querySelector('input[data-field="email"]').value;
       user.role = rows[i].querySelector('select[data-field="role"]').value;
-      const selectedWarehouses = Array.from(rows[i].querySelector('select[data-field="warehouses"]').selectedOptions)
-        .map(opt => opt.value);
+      const selectedWarehouses = Array.from(rows[i].querySelector('select[data-field="warehouses"]').selectedOptions).map(opt=>opt.value);
       user.warehouses = selectedWarehouses;
 
-      const { error } = await supabase
-        .from('Login Credentials')
+      const { error } = await supabase.from('Login Credentials')
         .update({
           "User Name": user.username,
           "Email Id": user.email,
@@ -196,18 +114,18 @@
         })
         .eq('id', user.id);
 
-      if (error) {
-        console.error(`Error updating ${user.username}:`, error);
-        alert(`Failed to update ${user.username}`);
-      }
+      if (error) console.error(`Error updating ${user.username}:`,error);
     }
-
-    alert('✅ All changes saved successfully!');
+    alert('✅ Changes saved!');
     await loadUsers();
   }
 
-  function goBack() {
-    window.location.href = 'dashboard.html';
+  function goBack() { window.location.href='dashboard.html'; }
+
+  function searchUsers() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    filteredUsers = users.filter(u => u.username.toLowerCase().includes(query));
+    renderUsers();
   }
 
   window.onload = loadUsers;
@@ -215,4 +133,3 @@
 
 </body>
 </html>
-
