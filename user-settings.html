@@ -61,8 +61,12 @@
   let columns = [];
 
   async function loadUsers() {
-    const { data, error } = await supabase.from('Login Credentials').select('*');
-    if (error) { alert('Error fetching users'); console.error(error); return; }
+    const { data, error } = await supabase.from('"Login Credentials"').select('*');
+    if (error) { 
+      alert('Error fetching users'); 
+      console.error(error); 
+      return; 
+    }
 
     users = data;
     filteredUsers = [...users];
@@ -91,7 +95,6 @@
             <div class="dropdown-content" id="dropdown-${index}">
               <button onclick="editUser(${index})">Edit</button>
               <button onclick="deleteUser(${index})">Delete</button>
-              <!-- Add more options here -->
             </div>
           </div>
         </td>
@@ -124,8 +127,12 @@
   async function deleteUser(index){
     const user = filteredUsers[index];
     if(confirm(`Are you sure you want to delete ${user['User Name'] || user.username}?`)){
-      const { error } = await supabase.from('Login Credentials').delete().eq('id', user.id);
-      if(error){ alert('Delete failed'); console.error(error); return; }
+      const { error } = await supabase.from('"Login Credentials"').delete().eq('id', user.id);
+      if(error){ 
+        alert('Delete failed'); 
+        console.error(error); 
+        return; 
+      }
       alert('User deleted successfully!');
       await loadUsers();
     }
