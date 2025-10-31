@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard</title>
   <style>
-    /* Reset and base */
     body, html {
       margin: 0;
       padding: 0;
@@ -21,12 +20,11 @@
       left: 0;
       bottom: 0;
       width: 260px;
-      background-color: #1f2937; /* dark blue-gray */
+      background-color: #1f2937;
       color: white;
       padding: 20px;
       box-sizing: border-box;
       overflow-y: auto;
-      z-index: 1000;
       display: flex;
       flex-direction: column;
     }
@@ -47,185 +45,109 @@
       transition: background-color 0.3s ease;
       cursor: pointer;
     }
-    .side-panel a:hover {
-      background-color: #374151; /* lighter blue-gray */
-    }
+    .side-panel a:hover { background-color: #374151; }
     .side-panel .logout {
       margin-top: auto;
-      background-color: #e53e3e; /* red */
+      background-color: #e53e3e;
       text-align: center;
       font-weight: bold;
       user-select: none;
     }
-    .side-panel .logout:hover {
-      background-color: #c53030;
-    }
+    .side-panel .logout:hover { background-color: #c53030; }
 
-    /* Main panel shifted right by sidebar width */
+    /* Main panel */
     .main-panel {
       margin-left: 260px;
       padding: 20px;
       height: 100vh;
       box-sizing: border-box;
       overflow-y: auto;
-      background-color: white;
       display: flex;
       flex-direction: column;
+      background-color: white;
     }
-
-    /* Header */
     .main-panel h1 {
       font-size: 28px;
       color: #1f2937;
       margin: 0 0 20px 0;
       user-select: none;
     }
-
-    /* Content area with iframe fills remaining space */
     #content-area {
       flex-grow: 1;
       display: flex;
       flex-direction: column;
     }
-
     iframe {
       width: 100%;
       height: 100%;
       border: none;
       border-radius: 8px;
       flex-grow: 1;
-      min-height: 500px; /* fallback height */
+      min-height: 500px;
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .side-panel {
-        width: 200px;
-      }
-      .main-panel {
-        margin-left: 200px;
-      }
-    }
-    @media (max-width: 480px) {
-      .side-panel {
-        position: relative;
-        width: 100%;
-        height: auto;
-      }
-      .main-panel {
-        margin-left: 0;
-        padding: 10px;
-        height: auto;
-      }
-      iframe {
-        height: 400px;
-      }
-    }
+    /* Responsive */
+    @media (max-width: 768px) { .side-panel { width: 200px; } .main-panel { margin-left: 200px; } }
+    @media (max-width: 480px) { .side-panel { position: relative; width: 100%; height: auto; } .main-panel { margin-left: 0; padding: 10px; height: auto; } iframe { height: 400px; } }
   </style>
 </head>
 <body>
 
-  <div class="side-panel">
-    <h2 onclick="showWelcome()">Dashboard</h2>
-    <a href="#" id="link-master-reports">Master Reports</a>
-    <a href="#" id="link-audit-reports" onclick="showAuditorReports()">Auditor Reports</a>
-    <a href="#" id="link-payments">Payments</a>
-    <!-- User Settings now points to separate page -->
-    <a href="user-settings.html" id="link-user-settings" onclick="return checkUserSettingsAccess()">User Settings</a>
-    <a href="#" id="link-notifications">Notifications</a>
-    <a href="#" id="link-help">Help</a>
-    <a class="logout" onclick="logout()">Logout</a>
-  </div>
+<div class="side-panel">
+  <h2 onclick="showWelcome()">Dashboard</h2>
+  <a href="#" id="link-master-reports">Master Reports</a>
+  <a href="auditor-reports.html" id="link-audit-reports" target="_blank">Auditor Reports</a>
+  <a href="#" id="link-payments">Payments</a>
+  <a href="user-settings.html" id="link-user-settings" onclick="return checkUserSettingsAccess()">User Settings</a>
+  <a href="#" id="link-notifications">Notifications</a>
+  <a href="#" id="link-help">Help</a>
+  <a class="logout" onclick="logout()">Logout</a>
+</div>
 
-  <div class="main-panel">
-    <h1 id="welcome">Welcome</h1>
-    <div id="content-area"></div>
-  </div>
+<div class="main-panel">
+  <h1 id="welcome">Welcome</h1>
+  <div id="content-area"></div>
+</div>
 
-  <script>
-    // Check for logged-in user info in localStorage
-    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-    if (!loggedInUser || !loggedInUser.username) {
-      window.location.href = 'index.html'; // redirect if not logged in
+<script>
+  // Check logged-in user
+  const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+  if (!loggedInUser || !loggedInUser.username) {
+    window.location.href = 'index.html';
+  }
+
+  const role = loggedInUser.role;
+
+  // Access control for User Settings
+  function checkUserSettingsAccess() {
+    if (role !== 'Owner' && role !== 'Admin') {
+      alert('Access Denied: You do not have permission to access User Settings.');
+      return false;
     }
+    return true;
+  }
 
-    const role = loggedInUser.role;
+  // Logout
+  function logout() {
+    localStorage.removeItem('loggedInUser');
+    window.location.href = 'index.html';
+  }
 
-    // Define access rights by role
-    const accessRights = {
-      'Admin': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
-      'Executive': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
-      'Team Leader': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
-      'Team Member': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
-    };
+  // Show dashboard iframe
+  function showWelcome() {
+    document.getElementById('welcome').textContent = `Welcome, ${loggedInUser.username}`;
+    document.getElementById('content-area').innerHTML = `
+      <iframe 
+        title="Warehouse Audit Dashboard" 
+        src="https://app.powerbi.com/view?r=eyJrIjoiMGJmM2FmMTYtYjVmNi00YjM1LWI5MGMtMzA1ZGY3NjA5MzM5IiwidCI6ImQzNTZhZjUzLWYzNWYtNGVmZi04NmU1LTVjNjc2MzEzZTRlNCIsImMiOjEwfQ%3D%3D" 
+        allowfullscreen>
+      </iframe>
+    `;
+  }
 
-    // Hide/show sidebar links depending on role (all visible now)
-    function restrictLinks() {
-      const allLinks = {
-        "User Settings": document.getElementById('link-user-settings'),
-        "Master Reports": document.getElementById('link-master-reports'),
-        "Auditor Reports": document.getElementById('link-audit-reports'),
-        "Payments": document.getElementById('link-payments'),
-        "Notifications": document.getElementById('link-notifications'),
-        "Help": document.getElementById('link-help')
-      };
-
-      // Keep all links visible, no hiding
-      for (const elem of Object.values(allLinks)) {
-        elem.style.display = 'block';
-      }
-    }
-
-    restrictLinks();
-
-    // Show dashboard welcome and Power BI iframe
-    function showWelcome() {
-      document.getElementById('welcome').textContent = `Welcome, ${loggedInUser.username}`;
-      document.getElementById('content-area').innerHTML = `
-        <iframe 
-          title="Warehouse Audit Dashboard" 
-          src="https://app.powerbi.com/view?r=eyJrIjoiMGJmM2FmMTYtYjVmNi00YjM1LWI5MGMtMzA1ZGY3NjA5MzM5IiwidCI6ImQzNTZhZjUzLWYzNWYtNGVmZi04NmU1LTVjNjc2MzEzZTRlNCIsImMiOjEwfQ%3D%3D" 
-          allowfullscreen>
-        </iframe>
-      `;
-    }
-
-    // Show auditor reports iframe
-    function showAuditorReports() {
-      document.getElementById('welcome').textContent = 'Auditor Reports';
-      document.getElementById('content-area').innerHTML = `
-        <iframe 
-          title="Auditor Data" 
-          src="Auditor_Data.html" 
-          allowfullscreen>
-        </iframe>
-      `;
-    }
-
-    // User Settings access check
-    function checkUserSettingsAccess() {
-      if (role !== 'Owner' && role !== 'Admin') {
-        alert('Access Denied: You do not have permission to access User Settings.');
-        return false; // prevents navigation
-      }
-      return true; // allow navigation
-    }
-
-    // Logout function clears user data and redirects
-    function logout() {
-      localStorage.removeItem('loggedInUser');
-      window.location.href = 'index.html';
-    }
-
-    // Load dashboard on page load
-    window.onload = function() {
-      if (!loggedInUser || !loggedInUser.username) {
-        window.location.href = 'index.html';
-      } else {
-        showWelcome();
-      }
-    };
-  </script>
+  // Load dashboard on page load
+  window.onload = showWelcome;
+</script>
 
 </body>
 </html>
