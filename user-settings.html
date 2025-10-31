@@ -1,217 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Settings | Warehouse Audit System</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Settings</title>
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f6f8fa;
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
       margin: 0;
-      padding: 0;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      padding: 20px;
     }
 
-    header {
-      width: 100%;
-      background: #eef2f7;
-      padding: 15px 30px;
-      text-align: center;
-      font-weight: 600;
-      font-size: 22px;
-      color: #2a3b5f;
+    h1 {
+      color: #1f2937;
+    }
+
+    .user-settings-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 800px;
+      margin: 20px auto;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    .container {
-      background: #fff;
-      margin-top: 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      padding: 40px;
-      width: 90%;
-      max-width: 900px;
-    }
-
-    h2 {
-      text-align: center;
-      color: #1e3c72;
-      margin-bottom: 25px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 20px;
     }
 
     th, td {
-      border: 1px solid #ddd;
       padding: 10px;
-      text-align: center;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
     }
 
     th {
-      background: #f1f4f9;
-      color: #2a3b5f;
-      font-weight: 600;
-    }
-
-    input, select {
-      width: 90%;
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
+      background-color: #f1f5f9;
     }
 
     select[multiple] {
+      width: 100%;
       height: 80px;
     }
 
-    .actions button {
-      background: #4a69bd;
-      color: #fff;
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #1f2937;
+      color: white;
       border: none;
-      padding: 8px 14px;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
-      transition: 0.3s;
     }
 
-    .actions button:hover {
-      background: #3956a3;
-    }
-
-    .success, .error {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: 600;
-    }
-
-    .success { color: green; }
-    .error { color: red; }
-
-    @media (max-width: 768px) {
-      table { font-size: 13px; }
-      select[multiple] { height: 60px; }
+    button:hover {
+      background-color: #374151;
     }
   </style>
 </head>
 <body>
-  <header>User Management & Settings</header>
 
-  <div class="container">
-    <h2>Manage User Accounts</h2>
-    <table id="userTable">
-      <thead>
-        <tr>
-          <th>User Name</th>
-          <th>Email Id</th>
-          <th>Role</th>
-          <th>Team</th>
-          <th>Warehouse Access</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="userTableBody"></tbody>
-    </table>
+<div class="user-settings-container">
+  <h1>User Settings</h1>
+  <p>Assign warehouse access to users:</p>
 
-    <div id="message"></div>
-  </div>
+  <table id="users-table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Warehouse Access</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Users will be dynamically loaded here -->
+    </tbody>
+  </table>
+  <button onclick="saveWarehouseAccess()">Save Changes</button>
+</div>
 
-  <script>
-    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+  // Dummy warehouse list
+  const warehouses = ["WH-001", "WH-002", "WH-003", "WH-004", "WH-005"];
 
-    const warehouses = [
-      'W001 - Central Warehouse',
-      'W002 - East Wing',
-      'W003 - Cold Storage',
-      'W004 - Packaging Unit',
-      'W005 - Distribution Center'
-    ];
+  // Load users from localStorage (replace with DB fetch in future)
+  let users = JSON.parse(localStorage.getItem('allUsers')) || [
+    { username: "admin", email: "admin@test.com", role: "Admin", warehouses: [] },
+    { username: "owner", email: "owner@test.com", role: "Owner", warehouses: [] },
+    { username: "employee1", email: "emp1@test.com", role: "Employee", warehouses: [] }
+  ];
 
-    const userTableBody = document.getElementById('userTableBody');
-    const messageEl = document.getElementById('message');
+  const tbody = document.querySelector("#users-table tbody");
 
-    async function loadUsers() {
-      const { data, error } = await supabaseClient
-        .from('Login Credientials')
-        .select('"User Name", "Email Id", "Role", "Team", "Warehouse Access", id');
+  function renderUsers() {
+    tbody.innerHTML = "";
+    users.forEach((user, index) => {
+      const tr = document.createElement("tr");
 
-      if (error) {
-        console.error(error);
-        messageEl.textContent = 'Error loading users.';
-        messageEl.className = 'error';
-        return;
-      }
+      tr.innerHTML = `
+        <td>${user.username}</td>
+        <td>${user.email}</td>
+        <td>${user.role}</td>
+        <td>
+          <select multiple data-index="${index}">
+            ${warehouses.map(wh => `<option value="${wh}" ${user.warehouses.includes(wh) ? "selected" : ""}>${wh}</option>`).join('')}
+          </select>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-      userTableBody.innerHTML = '';
+  function saveWarehouseAccess() {
+    const selects = document.querySelectorAll("select[multiple]");
+    selects.forEach(select => {
+      const index = select.getAttribute("data-index");
+      const selected = Array.from(select.selectedOptions).map(option => option.value);
+      users[index].warehouses = selected;
+    });
 
-      data.forEach(user => {
-        const row = document.createElement('tr');
-        const currentAccess = Array.isArray(user['Warehouse Access']) ? user['Warehouse Access'] : [];
+    localStorage.setItem("allUsers", JSON.stringify(users));
+    alert("✅ Warehouse access updated successfully!");
+  }
 
-        // Create dropdown with multi-select
-        const warehouseSelect = document.createElement('select');
-        warehouseSelect.multiple = true;
-        warehouseSelect.id = `warehouse-${user.id}`;
-        warehouses.forEach(wh => {
-          const option = document.createElement('option');
-          option.value = wh;
-          option.textContent = wh;
-          if (currentAccess.includes(wh)) option.selected = true;
-          warehouseSelect.appendChild(option);
-        });
+  // Render users on page load
+  renderUsers();
 
-        row.innerHTML = `
-          <td>${user['User Name']}</td>
-          <td>${user['Email Id']}</td>
-          <td><input type="text" value="${user.Role || ''}" id="role-${user.id}"></td>
-          <td><input type="text" value="${user.Team || ''}" id="team-${user.id}"></td>
-          <td id="warehouse-cell-${user.id}"></td>
-          <td class="actions"><button onclick="updateUser(${user.id})">Save</button></td>
-        `;
+</script>
 
-        userTableBody.appendChild(row);
-        document.getElementById(`warehouse-cell-${user.id}`).appendChild(warehouseSelect);
-      });
-    }
-
-    async function updateUser(id) {
-      const role = document.getElementById(`role-${id}`).value.trim();
-      const team = document.getElementById(`team-${id}`).value.trim();
-      const selectEl = document.getElementById(`warehouse-${id}`);
-      const selectedWarehouses = Array.from(selectEl.selectedOptions).map(o => o.value);
-
-      const { error } = await supabaseClient
-        .from('Login Credientials')
-        .update({
-          Role: role,
-          Team: team,
-          "Warehouse Access": selectedWarehouses
-        })
-        .eq('id', id);
-
-      if (error) {
-        console.error(error);
-        messageEl.textContent = '❌ Failed to update user.';
-        messageEl.className = 'error';
-      } else {
-        messageEl.textContent = '✅ User updated successfully!';
-        messageEl.className = 'success';
-      }
-    }
-
-    loadUsers();
-  </script>
 </body>
 </html>
