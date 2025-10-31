@@ -2,38 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login | Warehouse Audit System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    /* Full page dark ash background */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #2b2b2b; /* Dark ash */
-      color: #fff;
+      background: #f2f2f2;
+      color: #333;
     }
 
-    /* Container */
     .container {
       display: flex;
       width: 850px;
       max-width: 95%;
-      background: #1e1e1e; /* Slightly darker for container */
+      background: #fff;
       border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       overflow: hidden;
-      min-height: 450px;
+      min-height: 500px;
     }
 
-    /* Left panel */
+    /* Left panel with textile/fashion warehouse image */
     .left-panel {
       flex: 1;
-      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45));
+      background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+                  url('https://mecaluxcom.cdnwm.com/blog/img/warehouse-clothing-racking.1.13.jpg?imdensity=1&imwidth=1024') 
+                  no-repeat center center/cover;
       color: #fff;
       padding: 40px 30px;
       display: flex;
@@ -47,6 +47,7 @@
       font-size: 28px;
       margin-bottom: 15px;
       font-weight: 700;
+      line-height: 1.2;
     }
 
     .left-panel p {
@@ -56,7 +57,7 @@
       opacity: 0.9;
     }
 
-    /* Login form panel */
+    /* Login form */
     .login-box {
       flex: 1;
       padding: 50px 40px;
@@ -67,95 +68,80 @@
 
     .login-box h2 {
       margin-bottom: 30px;
-      font-size: 26px;
+      text-align: center;
+      color: #222;
       font-weight: 700;
-      color: #fff;
+      font-size: 26px;
     }
 
     input {
-      margin-bottom: 15px;
-      padding: 14px;
-      border: 1.5px solid #555;
+      width: 100%;
+      padding: 14px 12px;
+      margin-bottom: 20px;
+      border: 1.5px solid #ddd;
       border-radius: 8px;
       font-size: 16px;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
-      width: 100%;
-      box-sizing: border-box;
-      background: #333;
-      color: #fff;
     }
 
     input:focus {
       border-color: #4a69bd;
-      box-shadow: 0 0 5px rgba(74,105,189,0.5);
       outline: none;
-    }
-
-    .password-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .toggle-password {
-      position: absolute;
-      right: 12px;
-      cursor: pointer;
-      font-size: 14px;
-      color: #4a69bd;
-      user-select: none;
+      box-shadow: 0 0 8px #4a69bdaa;
     }
 
     button {
       width: 100%;
       padding: 14px 0;
-      background: linear-gradient(135deg, #1f3a93, #4a69bd);
+      background-color: #4a69bd;
       border: none;
       border-radius: 8px;
-      color: #fff;
+      color: white;
       font-size: 18px;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.3s ease;
-      margin-top: 10px;
+      transition: background-color 0.3s ease;
     }
 
     button:hover {
-      background: linear-gradient(135deg, #4a69bd, #1f3a93);
+      background-color: #3b4d8a;
     }
 
     .error {
       color: #e74c3c;
-      margin-bottom: 15px;
-      font-size: 14px;
+      margin-top: 12px;
+      text-align: center;
+      font-weight: 600;
     }
 
-    .register-link, .forgot-link {
-      margin-top: 10px;
+    .register-link {
+      margin-top: 22px;
+      text-align: center;
       font-size: 14px;
+      color: #555;
     }
 
-    .register-link a, .forgot-link a {
+    .register-link a {
       color: #4a69bd;
       font-weight: 700;
       text-decoration: none;
       cursor: pointer;
     }
 
-    .register-link a:hover, .forgot-link a:hover {
+    .register-link a:hover {
       text-decoration: underline;
     }
 
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
+        min-height: auto;
       }
       .left-panel {
         height: 200px;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
         border-radius: 12px 12px 0 0;
+        text-align: center;
+        padding: 30px 20px;
       }
     }
   </style>
@@ -165,77 +151,33 @@
     <!-- Left Panel -->
     <div class="left-panel">
       <h1>Warehouse Audit Management</h1>
-      <p>Streamline audit dashboards, warehouse controls, and reporting with ease.</p>
+      <p>Streamline and personalize audit dashboards, warehouse controls, and audit reporting with ease.</p>
     </div>
 
     <!-- Login Box -->
     <div class="login-box">
       <h2>Login</h2>
-      <div id="error-msg" class="error"></div>
-
-      <input type="email" id="email" placeholder="Email" required />
-
-      <div class="password-wrapper">
-        <input type="password" id="password" placeholder="Password" required />
-        <span class="toggle-password" onclick="togglePassword()">Show</span>
-      </div>
-
+      <input type="email" id="email" placeholder="Email Id" required />
+      <input type="password" id="password" placeholder="Password" required />
       <button onclick="login()">Login</button>
-
-      <!-- Forgot Password -->
-      <div class="forgot-link">
-        <a id="forgot-link">Forgot Password?</a>
-      </div>
-
-      <div id="forgot-form" style="display:none; margin-top:10px;">
-        <input type="email" id="reset-email" placeholder="Enter your email for reset" />
-        <button onclick="sendResetEmail()">Send Reset Link</button>
-        <div id="reset-msg" class="error" style="margin-top:5px;"></div>
-      </div>
-
-      <!-- Register Link -->
+      <div class="error" id="error-msg"></div>
       <div class="register-link">
-        Don't have an account? <a href="register.html">Register</a>
+        Don’t have an account? <a href="register.html">Register Now</a>
       </div>
     </div>
   </div>
 
   <script>
-    // Replace these with your Supabase project details
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const passwordInput = document.getElementById('password');
-    const togglePasswordEl = document.querySelector('.toggle-password');
-    const forgotLink = document.getElementById('forgot-link');
-    const forgotForm = document.getElementById('forgot-form');
-    const resetMsg = document.getElementById('reset-msg');
-
-    // Toggle password visibility
-    function togglePassword() {
-      if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        togglePasswordEl.textContent = 'Hide';
-      } else {
-        passwordInput.type = 'password';
-        togglePasswordEl.textContent = 'Show';
-      }
-    }
-
-    // Toggle forgot password form
-    forgotLink.addEventListener('click', () => {
-      forgotForm.style.display = forgotForm.style.display === 'none' ? 'block' : 'none';
-      resetMsg.textContent = '';
-    });
-
-    // Login function
     async function login() {
       const errorMsgEl = document.getElementById('error-msg');
       errorMsgEl.textContent = '';
 
       const email = document.getElementById('email').value.trim();
-      const password = passwordInput.value.trim();
+      const password = document.getElementById('password').value.trim();
 
       if (!email || !password) {
         errorMsgEl.textContent = 'Please enter both email and password.';
@@ -243,41 +185,35 @@
       }
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseClient
+          .from('Login Credientials')
+          .select('"User Name", "Email Id", "Password", "Role", "Team"')
+          .eq('Email Id', email)
+          .single();
 
-        if (error || !data?.user) {
+        if (error || !data) {
           errorMsgEl.textContent = 'Invalid credentials or user not found.';
           return;
         }
 
-        window.location.href = 'dashboard.html';
-      } catch (err) {
-        console.error('Login error:', err);
-        errorMsgEl.textContent = 'Something went wrong. Please try again.';
-      }
-    }
-
-    // Send password reset email
-    async function sendResetEmail() {
-      const email = document.getElementById('reset-email').value.trim();
-      resetMsg.textContent = '';
-
-      if (!email) {
-        resetMsg.textContent = 'Please enter your email.';
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.auth.resetPasswordForEmail(email);
-        if (error) {
-          resetMsg.textContent = 'Error: ' + error.message;
-        } else {
-          resetMsg.style.color = 'green';
-          resetMsg.textContent = 'Password reset email sent! Check your inbox.';
+        if (data.Password !== password) {
+          errorMsgEl.textContent = 'Invalid credentials.';
+          return;
         }
+
+        const user = {
+          username: data['User Name'],
+          email: data['Email Id'],
+          role: data.Role,
+          team: data.Team
+        };
+
+        localStorage.setItem('loggedInUser', JSON.stringify(user));
+        window.location.href = 'dashboard.html';
+
       } catch (err) {
-        console.error(err);
-        resetMsg.textContent = 'Something went wrong. Please try again.';
+        console.error('Catch error:', err);
+        errorMsgEl.textContent = 'Something went wrong. Please try again.';
       }
     }
   </script>
