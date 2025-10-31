@@ -6,7 +6,7 @@
   <title>Login | Warehouse Audit System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    /* Full page background */
+    /* Full page dark ash background */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -14,7 +14,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: url('https://images.pexels.com/photos/256381/pexels-photo-256381.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940') no-repeat center center/cover;
+      background: #2b2b2b; /* Dark ash */
+      color: #fff;
     }
 
     /* Container */
@@ -22,19 +23,17 @@
       display: flex;
       width: 850px;
       max-width: 95%;
-      background: rgba(255, 255, 255, 0.95);
+      background: #1e1e1e; /* Slightly darker for container */
       border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       overflow: hidden;
       min-height: 450px;
     }
 
-    /* Left panel with textile/fashion warehouse image */
+    /* Left panel */
     .left-panel {
       flex: 1;
-      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
-                  url('https://mecaluxcom.cdnwm.com/blog/img/warehouse-clothing-racking.1.13.jpg?imdensity=1&imwidth=1024') 
-                  no-repeat center center/cover;
+      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45));
       color: #fff;
       padding: 40px 30px;
       display: flex;
@@ -70,23 +69,25 @@
       margin-bottom: 30px;
       font-size: 26px;
       font-weight: 700;
-      color: #333;
+      color: #fff;
     }
 
     input {
       margin-bottom: 15px;
       padding: 14px;
-      border: 1.5px solid #ddd;
+      border: 1.5px solid #555;
       border-radius: 8px;
       font-size: 16px;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
       width: 100%;
       box-sizing: border-box;
+      background: #333;
+      color: #fff;
     }
 
     input:focus {
       border-color: #4a69bd;
-      box-shadow: 0 0 5px rgba(74, 105, 189, 0.5);
+      box-shadow: 0 0 5px rgba(74,105,189,0.5);
       outline: none;
     }
 
@@ -124,7 +125,7 @@
     }
 
     .error {
-      color: red;
+      color: #e74c3c;
       margin-bottom: 15px;
       font-size: 14px;
     }
@@ -200,6 +201,7 @@
   </div>
 
   <script>
+    // Replace these with your Supabase project details
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
     const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
