@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login | Warehouse Audit System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
@@ -13,7 +13,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #2c2c2c; /* Dark ash background */
+      background-color: #2e2e2e; /* dark ash background */
       color: #fff;
     }
 
@@ -23,14 +23,13 @@
       max-width: 95%;
       background: #fff;
       border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
       overflow: hidden;
       min-height: 450px;
     }
 
     .left-panel {
       flex: 1;
-      background: url('https://images.pexels.com/photos/4491469/pexels-photo-4491469.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940') no-repeat center center/cover;
+      background: url('https://mecaluxcom.cdnwm.com/blog/img/warehouse-clothing-racking.1.13.jpg?imdensity=1&imwidth=1024') no-repeat center center/cover;
       color: #fff;
       padding: 40px 30px;
       display: flex;
@@ -45,7 +44,6 @@
       font-size: 28px;
       margin-bottom: 15px;
       font-weight: 700;
-      line-height: 1.2;
     }
 
     .left-panel p {
@@ -61,7 +59,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      background-color: #2c2c2c; /* Dark ash background for login box */
+      background-color: #2e2e2e; /* dark ash background for form */
       color: #fff;
     }
 
@@ -70,11 +68,6 @@
       text-align: center;
       font-weight: 700;
       font-size: 26px;
-      color: #fff;
-    }
-
-    .input-wrapper {
-      position: relative;
     }
 
     input {
@@ -84,13 +77,9 @@
       border: 1.5px solid #555;
       border-radius: 8px;
       font-size: 16px;
-      transition: border-color 0.3s ease;
-      background-color: #1f1f1f;
+      background-color: #444;
       color: #fff;
-    }
-
-    input::placeholder {
-      color: #aaa;
+      transition: border-color 0.3s ease;
     }
 
     input:focus {
@@ -99,22 +88,27 @@
       box-shadow: 0 0 8px #4a69bdaa;
     }
 
+    .password-wrapper {
+      position: relative;
+    }
+
     .toggle-password {
       position: absolute;
-      top: 50%;
       right: 12px;
+      top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
-      color: #aaa;
+      font-size: 18px;
+      color: #ccc;
     }
 
     button {
       width: 100%;
       padding: 14px 0;
-      background: linear-gradient(135deg, #4a69bd, #1f3a93);
+      background: linear-gradient(135deg, #1f3a93, #4a69bd);
       border: none;
       border-radius: 8px;
-      color: white;
+      color: #fff;
       font-size: 18px;
       font-weight: 700;
       cursor: pointer;
@@ -122,7 +116,7 @@
     }
 
     button:hover {
-      background: linear-gradient(135deg, #1f3a93, #4a69bd);
+      background: linear-gradient(135deg, #4a69bd, #1f3a93);
     }
 
     .error {
@@ -132,24 +126,20 @@
       font-weight: 600;
     }
 
-    .register-link,
-    .forgot-password {
+    .register-link, .forgot-password {
       margin-top: 15px;
       text-align: center;
       font-size: 14px;
-      color: #ccc;
     }
 
-    .register-link a,
-    .forgot-password a {
+    .register-link a, .forgot-password a {
       color: #4a69bd;
       font-weight: 700;
       text-decoration: none;
       cursor: pointer;
     }
 
-    .register-link a:hover,
-    .forgot-password a:hover {
+    .register-link a:hover, .forgot-password a:hover {
       text-decoration: underline;
     }
 
@@ -160,6 +150,7 @@
       .left-panel {
         height: 200px;
         border-radius: 12px 12px 0 0;
+        text-align: center;
       }
     }
   </style>
@@ -173,24 +164,16 @@
 
     <div class="login-box">
       <h2>Login</h2>
-
-      <div class="input-wrapper">
-        <input type="email" id="email" placeholder="Email Id" required />
-      </div>
-
-      <div class="input-wrapper">
+      <input type="email" id="email" placeholder="Email Id" required />
+      <div class="password-wrapper">
         <input type="password" id="password" placeholder="Password" required />
         <span class="toggle-password" onclick="togglePassword()">👁️</span>
       </div>
-
       <button onclick="login()">Login</button>
-
       <div class="error" id="error-msg"></div>
-
       <div class="forgot-password">
-        <a href="forgot-password.html">Forgot Password?</a>
+        <a href="#">Forgot Password?</a>
       </div>
-
       <div class="register-link">
         Don’t have an account? <a href="register.html">Register Now</a>
       </div>
@@ -199,13 +182,8 @@
 
   <script>
     const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+    const SUPABASE_KEY = 'YOUR_SUPABASE_KEY';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    function togglePassword() {
-      const passwordInput = document.getElementById('password');
-      passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
-    }
 
     async function login() {
       const errorMsgEl = document.getElementById('error-msg');
@@ -222,19 +200,16 @@
       try {
         const { data, error } = await supabaseClient
           .from('"Login Credentials"')
-          .select('"User Name", "Email Id", "Password", "Role", "Team", "Warehouse Access"')
+          .select('"Email Id","Password","User Name","Role","Team"')
           .eq('"Email Id"', email)
           .single();
-
-        console.log('Supabase data:', data);
-        console.log('Supabase error:', error);
 
         if (error || !data) {
           errorMsgEl.textContent = 'Invalid credentials or user not found.';
           return;
         }
 
-        if (data['Password'] !== password) {
+        if (data.Password !== password) {
           errorMsgEl.textContent = 'Invalid credentials.';
           return;
         }
@@ -243,16 +218,22 @@
           username: data['User Name'],
           email: data['Email Id'],
           role: data.Role,
-          team: data.Team,
-          warehouseAccess: data['Warehouse Access']
+          team: data.Team
         };
 
         localStorage.setItem('loggedInUser', JSON.stringify(user));
         window.location.href = 'dashboard.html';
+
       } catch (err) {
-        console.error('Catch error:', err);
+        console.error(err);
         errorMsgEl.textContent = 'Something went wrong. Please try again.';
       }
+    }
+
+    function togglePassword() {
+      const passwordInput = document.getElementById('password');
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
     }
   </script>
 </body>
