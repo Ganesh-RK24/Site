@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login | Warehouse Audit System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
@@ -19,22 +19,18 @@
 
     .container {
       display: flex;
-      width: 850px;
+      width: 800px;
       max-width: 95%;
       background: #fff;
       border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       overflow: hidden;
       min-height: 450px;
     }
 
-    /* Left image panel */
     .left-panel {
       flex: 1;
-      background:
-        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
-        url('https://images.pexels.com/photos/3951928/warehouse-logistics-intensive-warehouse-3951928.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940')
-        no-repeat center center/cover;
+      background: url('https://warehousingetc.com/wp-content/uploads/2021/03/Warehouse‑Audit‑Details‑768x432.png') no-repeat center center/cover;
       color: #fff;
       padding: 40px 30px;
       display: flex;
@@ -42,7 +38,7 @@
       justify-content: center;
       border-top-left-radius: 12px;
       border-bottom-left-radius: 12px;
-      position: relative;
+      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
     }
 
     .left-panel h1 {
@@ -50,7 +46,6 @@
       margin-bottom: 15px;
       font-weight: 700;
       line-height: 1.2;
-      z-index: 2;
     }
 
     .left-panel p {
@@ -58,19 +53,17 @@
       line-height: 1.4;
       max-width: 280px;
       opacity: 0.9;
-      z-index: 2;
     }
 
-    /*  form panel */
-    .-box {
+    .login-box {
       flex: 1;
-      padding: 50px 40px;
+      padding: 40px 50px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
 
-    .-box h2 {
+    .login-box h2 {
       margin-bottom: 30px;
       text-align: center;
       color: #222;
@@ -85,7 +78,7 @@
       border: 1.5px solid #ddd;
       border-radius: 8px;
       font-size: 16px;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      transition: border-color 0.3s ease;
     }
 
     input:focus {
@@ -97,18 +90,18 @@
     button {
       width: 100%;
       padding: 14px 0;
-      background: linear-gradient(135deg, #1f3a93, #4a69bd);
+      background-color: #4a69bd;
       border: none;
       border-radius: 8px;
-      color: #fff;
+      color: white;
       font-size: 18px;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: background-color 0.3s ease;
     }
 
     button:hover {
-      background: linear-gradient(135deg, #4a69bd, #1f3a93);
+      background-color: #3b4d8a;
     }
 
     .error {
@@ -129,23 +122,11 @@
       color: #4a69bd;
       font-weight: 700;
       text-decoration: none;
+      cursor: pointer;
     }
 
     .register-link a:hover {
       text-decoration: underline;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-      .left-panel {
-        height: 200px;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        border-radius: 12px 12px 0 0;
-      }
     }
   </style>
 </head>
@@ -153,14 +134,14 @@
   <div class="container">
     <div class="left-panel">
       <h1>Warehouse Audit Management</h1>
-      <p>Streamline audit dashboards, warehouse controls, and reporting with ease.</p>
+      <p>Streamline and personalize audit dashboards, warehouse controls, and audit reporting with ease.</p>
     </div>
 
-    <div class="-box">
-      <h2></h2>
+    <div class="login-box">
+      <h2>Login</h2>
       <input type="email" id="email" placeholder="Email Id" required />
       <input type="password" id="password" placeholder="Password" required />
-      <button onclick="()"></button>
+      <button onclick="login()">Login</button>
       <div class="error" id="error-msg"></div>
       <div class="register-link">
         Don’t have an account? <a href="register.html">Register Now</a>
@@ -173,11 +154,12 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function () {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+    async function login() {
       const errorMsgEl = document.getElementById('error-msg');
       errorMsgEl.textContent = '';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
 
       if (!email || !password) {
         errorMsgEl.textContent = 'Please enter both email and password.';
@@ -186,10 +168,13 @@
 
       try {
         const { data, error } = await supabaseClient
-          .from('Login Credentials')
+          .from('Login Credientials')
           .select('"User Name", "Email Id", "Password", "Role", "Team"')
           .eq('Email Id', email)
           .single();
+
+        console.log('Supabase query error:', error);
+        console.log('Supabase query data:', data);
 
         if (error || !data) {
           errorMsgEl.textContent = 'Invalid credentials or user not found.';
@@ -209,15 +194,13 @@
         };
 
         localStorage.setItem('loggedInUser', JSON.stringify(user));
-        window.location.href = 'dashboard';
+        window.location.href = 'dashboard.html';
 
       } catch (err) {
-        console.error(err);
+        console.error('Catch error:', err);
         errorMsgEl.textContent = 'Something went wrong. Please try again.';
       }
     }
   </script>
 </body>
 </html>
-
-
