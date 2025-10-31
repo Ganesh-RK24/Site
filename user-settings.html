@@ -10,14 +10,31 @@
     h1 { color: #1f2937; margin-bottom: 20px; }
     .back-button { margin-bottom: 10px; padding: 8px 16px; background: #1f2937; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
     .back-button:hover { background: #374151; }
+    .search-box { margin-bottom: 15px; padding: 6px 10px; width: 300px; border-radius: 6px; border: 1px solid #d1d5db; }
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
     th { background: #f1f5f9; }
-    input, select { width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #d1d5db; }
-    select[multiple] { min-height: 60px; }
-    button.save-button { margin-top: 15px; padding: 10px 20px; background: #10b981; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
-    button.save-button:hover { background: #059669; }
-    .search-box { margin-bottom: 15px; padding: 6px 10px; width: 300px; border-radius: 6px; border: 1px solid #d1d5db; }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 18px; }
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #fff;
+      min-width: 120px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+      border-radius: 6px;
+      z-index: 1000;
+    }
+    .dropdown-content button {
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+    }
+    .dropdown-content button:hover { background-color: #f1f5f9; }
+    .show { display: block; }
   </style>
 </head>
 <body>
@@ -29,104 +46,98 @@
 
 <div class="user-settings-container">
   <table id="users-table">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Warehouse Access</th>
-      </tr>
-    </thead>
+    <thead></thead>
     <tbody></tbody>
   </table>
-  <button class="save-button" onclick="saveChanges()">Save Changes</button>
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+  const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+  const SUPABASE_KEY = 'YOUR_ANON_KEY';
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // Default warehouses
-  const warehouses = ["W501", "W503", "W504", "W506", "W509", "W511", "W512"];
   let users = [];
   let filteredUsers = [];
+  let columns = [];
 
   async function loadUsers() {
     const { data, error } = await supabase.from('Login Credentials').select('*');
     if (error) { alert('Error fetching users'); console.error(error); return; }
 
-    users = data.map(u => ({
-      id: u.id,
-      username: u["User Name"],
-      email: u["Email Id"],
-      role: u.Role,
-      warehouses: u["Warehouse Access"] || []
-    }));
-
+    users = data;
     filteredUsers = [...users];
-    renderUsers();
+
+    if(users.length > 0){
+      columns = Object.keys(users[0]);
+      renderTable();
+    }
   }
 
-  function renderUsers() {
+  function renderTable() {
+    const thead = document.querySelector('#users-table thead');
     const tbody = document.querySelector('#users-table tbody');
+
+    // Render headers
+    thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '<th>Actions</th></tr>';
+
+    // Render rows
     tbody.innerHTML = '';
-    filteredUsers.forEach((user,index)=>{
+    filteredUsers.forEach((user, index)=>{
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><input type="text" value="${user.username}" data-index="${index}" data-field="username"></td>
-        <td><input type="email" value="${user.email}" data-index="${index}" data-field="email"></td>
+      tr.innerHTML = columns.map(col => `<td>${user[col] || ''}</td>`).join('') + `
         <td>
-          <select data-index="${index}" data-field="role">
-            ${["Owner","Admin","Executive","Team Leader","Team Member","Employee"].map(r=>`<option value="${r}" ${user.role===r?'selected':''}>${r}</option>`).join('')}
-          </select>
-        </td>
-        <td>
-          <select multiple data-index="${index}" data-field="warehouses">
-            ${warehouses.map(w=>`<option value="${w}" ${user.warehouses.includes(w)?'selected':''}>${w}</option>`).join('')}
-          </select>
+          <div class="dropdown">
+            <button class="action-btn" onclick="toggleDropdown(event, ${index})">⋮</button>
+            <div class="dropdown-content" id="dropdown-${index}">
+              <button onclick="editUser(${index})">Edit</button>
+              <button onclick="deleteUser(${index})">Delete</button>
+              <!-- Add more options here -->
+            </div>
+          </div>
         </td>
       `;
       tbody.appendChild(tr);
     });
   }
 
-  async function saveChanges() {
-    const tbody = document.querySelector('#users-table tbody');
-    const rows = tbody.querySelectorAll('tr');
-
-    for (let i=0;i<rows.length;i++) {
-      const index = rows[i].querySelector('input, select').getAttribute('data-index');
-      const user = filteredUsers[index];
-
-      user.username = rows[i].querySelector('input[data-field="username"]').value;
-      user.email = rows[i].querySelector('input[data-field="email"]').value;
-      user.role = rows[i].querySelector('select[data-field="role"]').value;
-      const selectedWarehouses = Array.from(rows[i].querySelector('select[data-field="warehouses"]').selectedOptions).map(opt=>opt.value);
-      user.warehouses = selectedWarehouses;
-
-      const { error } = await supabase.from('Login Credentials')
-        .update({
-          "User Name": user.username,
-          "Email Id": user.email,
-          "Role": user.role,
-          "Warehouse Access": user.warehouses
-        })
-        .eq('id', user.id);
-
-      if (error) console.error(`Error updating ${user.username}:`,error);
-    }
-    alert('✅ Changes saved!');
-    await loadUsers();
+  function toggleDropdown(e, index) {
+    e.stopPropagation();
+    closeAllDropdowns();
+    document.getElementById(`dropdown-${index}`).classList.toggle('show');
   }
 
-  function goBack() { window.location.href='dashboard.html'; }
+  function closeAllDropdowns() {
+    const dropdowns = document.querySelectorAll('.dropdown-content');
+    dropdowns.forEach(dd => dd.classList.remove('show'));
+  }
+
+  window.onclick = function() {
+    closeAllDropdowns();
+  }
+
+  function editUser(index){
+    const user = filteredUsers[index];
+    const editUrl = `edit-user.html?id=${user.id}`; // redirect to edit page
+    window.location.href = editUrl;
+  }
+
+  async function deleteUser(index){
+    const user = filteredUsers[index];
+    if(confirm(`Are you sure you want to delete ${user['User Name'] || user.username}?`)){
+      const { error } = await supabase.from('Login Credentials').delete().eq('id', user.id);
+      if(error){ alert('Delete failed'); console.error(error); return; }
+      alert('User deleted successfully!');
+      await loadUsers();
+    }
+  }
 
   function searchUsers() {
     const query = document.getElementById('searchInput').value.toLowerCase();
-    filteredUsers = users.filter(u => u.username.toLowerCase().includes(query));
-    renderUsers();
+    filteredUsers = users.filter(u => (u['User Name'] || u.username || '').toLowerCase().includes(query));
+    renderTable();
   }
+
+  function goBack() { window.location.href='dashboard.html'; }
 
   window.onload = loadUsers;
 </script>
