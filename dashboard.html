@@ -130,7 +130,8 @@
     <a href="#" id="link-master-reports">Master Reports</a>
     <a href="#" id="link-audit-reports" onclick="showAuditorReports()">Auditor Reports</a>
     <a href="#" id="link-payments">Payments</a>
-    <a href="#" id="link-user-settings" onclick="openUserSettings()">User Settings</a>
+    <!-- User Settings now points to separate page -->
+    <a href="user-settings.html" id="link-user-settings" onclick="return checkUserSettingsAccess()">User Settings</a>
     <a href="#" id="link-notifications">Notifications</a>
     <a href="#" id="link-help">Help</a>
     <a class="logout" onclick="logout()">Logout</a>
@@ -142,7 +143,7 @@
   </div>
 
   <script>
-    // Get logged-in user info
+    // Check for logged-in user info in localStorage
     const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
     if (!loggedInUser || !loggedInUser.username) {
       window.location.href = 'index.html'; // redirect if not logged in
@@ -150,18 +151,46 @@
 
     const role = loggedInUser.role;
 
-    // All links are visible, access restricted inside JS functions
+    // Define access rights by role
+    const accessRights = {
+      'Admin': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Executive': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Team Leader': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+      'Team Member': ['User Settings', 'Master Reports', 'Auditor Reports', 'Payments', 'Notifications', 'Help'],
+    };
+
+    // Hide/show sidebar links depending on role (all visible now)
+    function restrictLinks() {
+      const allLinks = {
+        "User Settings": document.getElementById('link-user-settings'),
+        "Master Reports": document.getElementById('link-master-reports'),
+        "Auditor Reports": document.getElementById('link-audit-reports'),
+        "Payments": document.getElementById('link-payments'),
+        "Notifications": document.getElementById('link-notifications'),
+        "Help": document.getElementById('link-help')
+      };
+
+      // Keep all links visible, no hiding
+      for (const elem of Object.values(allLinks)) {
+        elem.style.display = 'block';
+      }
+    }
+
+    restrictLinks();
+
+    // Show dashboard welcome and Power BI iframe
     function showWelcome() {
       document.getElementById('welcome').textContent = `Welcome, ${loggedInUser.username}`;
       document.getElementById('content-area').innerHTML = `
         <iframe 
           title="Warehouse Audit Dashboard" 
-          src="https://app.powerbi.com/view?r=eyJrIjoiYjlhZTZiYTUtZDBhOC00NzA0LTlmMDQtYWYyNTBjYzU5ZGUzIiwidCI6ImQzNTZhZjUzLWYzNWYtNGVmZi04NmU1LTVjNjc2MzEzZTRlNCIsImMiOjEwfQ%3D%3D" 
+          src="https://app.powerbi.com/view?r=eyJrIjoiMGJmM2FmMTYtYjVmNi00YjM1LWI5MGMtMzA1ZGY3NjA5MzM5IiwidCI6ImQzNTZhZjUzLWYzNWYtNGVmZi04NmU1LTVjNjc2MzEzZTRlNCIsImMiOjEwfQ%3D%3D" 
           allowfullscreen>
         </iframe>
       `;
     }
 
+    // Show auditor reports iframe
     function showAuditorReports() {
       document.getElementById('welcome').textContent = 'Auditor Reports';
       document.getElementById('content-area').innerHTML = `
@@ -173,16 +202,16 @@
       `;
     }
 
-    // Restrict User Settings access
-    function openUserSettings() {
-      if (role === 'Owner' || role === 'Admin') {
-        window.location.href = 'user-settings.html';
-      } else {
-        alert('❌ Access Denied: Only Admins and Owners can access User Settings.');
+    // User Settings access check
+    function checkUserSettingsAccess() {
+      if (role !== 'Owner' && role !== 'Admin') {
+        alert('Access Denied: You do not have permission to access User Settings.');
+        return false; // prevents navigation
       }
+      return true; // allow navigation
     }
 
-    // Logout function
+    // Logout function clears user data and redirects
     function logout() {
       localStorage.removeItem('loggedInUser');
       window.location.href = 'index.html';
