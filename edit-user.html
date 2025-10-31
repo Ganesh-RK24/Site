@@ -4,95 +4,114 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit User</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f6f8; margin:0; padding:20px; }
-    .container { max-width: 800px; margin:auto; background:white; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-    h1 { color: #1f2937; }
-    label { display:block; margin-top:10px; }
-    input, select, textarea { width:100%; padding:8px; margin-top:5px; border-radius:4px; border:1px solid #ccc; }
-    select[multiple] { height:100px; }
-    button { margin-top:15px; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; background:#3b82f6; color:white; }
-    button:hover { background:#2563eb; }
-    .back-btn { background:#6b7280; margin-right:10px; }
+    body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px; }
+    h1 { color: #1f2937; margin-bottom: 20px; }
+    .back-button { margin-bottom: 20px; padding: 8px 16px; background: #1f2937; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    .back-button:hover { background: #374151; }
+    form { background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #d1d5db; }
+    select[multiple] { height: 120px; }
+    button.save-btn { margin-top: 20px; padding: 10px 20px; background: #1f2937; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    button.save-btn:hover { background: #374151; }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Edit User</h1>
-  <form id="editForm">
-    <div id="form-fields"></div>
-    <button type="button" class="back-btn" onclick="goBack()">Back</button>
-    <button type="submit">Save Changes</button>
-  </form>
-</div>
+<h1>Edit User</h1>
+<button class="back-button" onclick="goBack()">← Back to User Settings</button>
+
+<form id="editForm">
+  <label>User Name</label>
+  <input type="text" id="username" required>
+
+  <label>Email Id</label>
+  <input type="email" id="email" required>
+
+  <label>Password</label>
+  <input type="text" id="password" required>
+
+  <label>Team</label>
+  <input type="text" id="team">
+
+  <label>Role</label>
+  <select id="role">
+    <option value="Admin">Admin</option>
+    <option value="Owner">Owner</option>
+    <option value="Employee">Employee</option>
+  </select>
+
+  <label>Warehouse Access</label>
+  <select id="warehouses" multiple>
+    <option value="W501">W501</option>
+    <option value="W503">W503</option>
+    <option value="W504">W504</option>
+    <option value="W506">W506</option>
+    <option value="W509">W509</option>
+    <option value="W511">W511</option>
+    <option value="W512">W512</option>
+  </select>
+
+  <button type="submit" class="save-btn">Save Changes</button>
+</form>
 
 <script>
-  const supabaseUrl = "https://japvvcwuvmstkaljcttu.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY";
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-  const tableName = '"Login Credientials"';
-  const defaultWarehouses = ["W501", "W503", "W504", "W506", "W509", "W511", "W512"];
-  const urlParams = new URLSearchParams(window.location.search);
-  const userId = urlParams.get("id");
+  const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const formFields = document.getElementById("form-fields");
+  const urlParams = new URLSearchParams(window.location.search);
+  const userId = urlParams.get('id');
+
+  const usernameInput = document.getElementById('username');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const teamInput = document.getElementById('team');
+  const roleSelect = document.getElementById('role');
+  const warehousesSelect = document.getElementById('warehouses');
+  const form = document.getElementById('editForm');
 
   async function loadUser() {
-    const { data, error } = await supabase.from(tableName).select("*").eq("id", userId).single();
-    if (error) { alert("Error loading user: "+error.message); return; }
-    renderForm(data);
+    const { data, error } = await supabase.from('"Login Credientials"').select('*').eq('id', userId).single();
+    if (error) { alert('Error loading user'); console.error(error); return; }
+
+    usernameInput.value = data['User Name'] || '';
+    emailInput.value = data['Email Id'] || '';
+    passwordInput.value = data['Password'] || '';
+    teamInput.value = data['Team'] || '';
+    roleSelect.value = data['Role'] || '';
+
+    // Set warehouse access
+    const userWarehouses = data['Warehouse Access'] ? data['Warehouse Access'].split(',') : [];
+    for (let option of warehousesSelect.options) {
+      option.selected = userWarehouses.includes(option.value);
+    }
   }
 
-  function renderForm(user) {
-    formFields.innerHTML = "";
-    Object.entries(user).forEach(([key, value]) => {
-      const label = document.createElement("label");
-      label.textContent = key;
-      let input;
-      if (key.toLowerCase().includes("warehouse")) {
-        input = document.createElement("select");
-        input.setAttribute("multiple", "");
-        defaultWarehouses.forEach(wh => {
-          const option = document.createElement("option");
-          option.value = wh;
-          option.textContent = wh;
-          if (Array.isArray(value) && value.includes(wh)) option.selected = true;
-          input.appendChild(option);
-        });
-      } else {
-        input = document.createElement("input");
-        input.value = value ?? "";
-      }
-      input.id = key;
-      formFields.appendChild(label);
-      formFields.appendChild(input);
-    });
-  }
-
-  document.getElementById("editForm").addEventListener("submit", async (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const updatedData = {};
-    Object.keys(document.getElementById("form-fields").children).forEach(k => {
-      const el = document.getElementById(k);
-      if (el) {
-        if (el.tagName === "SELECT") {
-          updatedData[el.id] = Array.from(el.selectedOptions).map(o => o.value);
-        } else {
-          updatedData[el.id] = el.value;
-        }
-      }
-    });
 
-    const { error } = await supabase.from(tableName).update(updatedData).eq("id", userId);
-    if (error) alert("Update failed: "+error.message);
-    else alert("✅ User updated successfully!");
+    const updatedData = {
+      'User Name': usernameInput.value,
+      'Email Id': emailInput.value,
+      'Password': passwordInput.value,
+      'Team': teamInput.value,
+      'Role': roleSelect.value,
+      'Warehouse Access': Array.from(warehousesSelect.selectedOptions).map(o => o.value).join(',')
+    };
+
+    const { error } = await supabase.from('"Login Credientials"').update(updatedData).eq('id', userId);
+    if (error) { alert('Update failed'); console.error(error); return; }
+
+    alert('✅ User updated successfully!');
+    goBack();
   });
 
-  function goBack() { window.history.back(); }
+  function goBack() { window.location.href='user-settings.html'; }
 
-  loadUser();
+  window.onload = loadUser;
 </script>
 
 </body>
