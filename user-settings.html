@@ -1,141 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Settings</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px; }
-    h1 { color: #1f2937; margin-bottom: 20px; }
-    .back-button { margin-bottom: 10px; padding: 8px 16px; background: #1f2937; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
-    .back-button:hover { background: #374151; }
-    .search-box { margin-bottom: 15px; padding: 6px 10px; width: 300px; border-radius: 6px; border: 1px solid #d1d5db; }
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-    th { background: #f1f5f9; }
-    .action-btn { background: none; border: none; cursor: pointer; font-size: 18px; }
-    .dropdown { position: relative; display: inline-block; }
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      background-color: #fff;
-      min-width: 120px;
-      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
-      border-radius: 6px;
-      z-index: 1000;
-    }
-    .dropdown-content button {
-      width: 100%;
-      padding: 8px 12px;
-      border: none;
-      background: none;
-      text-align: left;
-      cursor: pointer;
-    }
-    .dropdown-content button:hover { background-color: #f1f5f9; }
-    .show { display: block; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Settings</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px; }
+  h1 { color: #1f2937; margin-bottom: 20px; }
+  .back-button { margin-bottom: 10px; padding: 8px 16px; background: #1f2937; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+  .back-button:hover { background: #374151; }
+  .search-box { margin-bottom: 15px; padding: 6px 10px; width: 300px; border-radius: 6px; border: 1px solid #d1d5db; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+  th { background: #f1f5f9; }
+  .action-btn { background: none; border: none; cursor: pointer; font-size: 18px; }
+  .dropdown { position: relative; display: inline-block; }
+  .dropdown-content {
+    display: none; position: absolute; background-color: #fff; min-width: 120px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1); border-radius: 6px; z-index: 1000;
+  }
+  .dropdown-content button { width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; cursor: pointer; }
+  .dropdown-content button:hover { background-color: #f1f5f9; }
+  .show { display: block; }
+
+  /* Modal */
+  .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 10000; }
+  .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 500px; max-width: 90%; position: relative; }
+  .modal-content h2 { margin-top: 0; }
+  .modal-content label { display: block; margin-top: 10px; font-weight: bold; }
+  .modal-content input, .modal-content select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #d1d5db; }
+  .modal-content select[multiple] { height: 120px; }
+  .modal-content button { margin-top: 15px; padding: 10px 20px; background: #1f2937; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+  .modal-content button:hover { background: #374151; }
+  .close-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; background: none; border: none; cursor: pointer; }
+</style>
 </head>
 <body>
 
 <h1>User Settings</h1>
-<button class="back-button" onclick="goBack()">← Back to Homepage</button>
-
+<button class="back-button" onclick="goBack()">← Back to Dashboard</button>
 <input type="text" id="searchInput" class="search-box" placeholder="Search by username..." onkeyup="searchUsers()">
 
-<div class="user-settings-container">
-  <table id="users-table">
-    <thead></thead>
-    <tbody></tbody>
-  </table>
+<table id="users-table">
+  <thead></thead>
+  <tbody></tbody>
+</table>
+
+<!-- Edit User Modal -->
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <h2>Edit User</h2>
+    <form id="editForm">
+      <label>User Name</label><input type="text" id="username" required>
+      <label>Email Id</label><input type="email" id="email" required>
+      <label>Password</label><input type="text" id="password" required>
+      <label>Team</label><input type="text" id="team">
+      <label>Role</label>
+      <select id="role">
+        <option value="Admin">Admin</option>
+        <option value="Owner">Owner</option>
+        <option value="Employee">Employee</option>
+      </select>
+      <label>Warehouse Access</label>
+      <select id="warehouses" multiple>
+        <option value="W501">W501</option>
+        <option value="W503">W503</option>
+        <option value="W504">W504</option>
+        <option value="W506">W506</option>
+        <option value="W509">W509</option>
+        <option value="W511">W511</option>
+        <option value="W512">W512</option>
+      </select>
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
 </div>
 
 <script>
-  // ✅ Supabase connection
-  const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let users = [];
-  let filteredUsers = [];
-  const columns = ["id","User Name","Email Id","Password","Team","Role","Warehouse Access"];
+let users = [];
+let filteredUsers = [];
+let columns = [];
+let editingUserId = null;
 
-  async function loadUsers() {
-    const { data, error } = await supabase.from('"Login Credientials"').select('*');
-    if (error) {
-      alert('Error fetching users. Check console.');
-      console.error(error);
-      return;
-    }
+async function loadUsers() {
+  const { data, error } = await supabase.from('"Login Credientials"').select('*');
+  if (error) { alert('Error loading users'); console.error(error); return; }
 
-    users = data;
-    filteredUsers = [...users];
+  users = data;
+  filteredUsers = [...users];
+  if(users.length > 0){
+    columns = Object.keys(users[0]);
     renderTable();
   }
+}
 
-  function renderTable() {
-    const thead = document.querySelector('#users-table thead');
-    const tbody = document.querySelector('#users-table tbody');
+function renderTable() {
+  const thead = document.querySelector('#users-table thead');
+  const tbody = document.querySelector('#users-table tbody');
 
-    // Render headers
-    thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '<th>Actions</th></tr>';
+  thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '<th>Actions</th></tr>';
 
-    // Render rows
-    tbody.innerHTML = '';
-    filteredUsers.forEach((user, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = columns.map(col => `<td>${user[col] || ''}</td>`).join('') + `
-        <td>
-          <div class="dropdown">
-            <button class="action-btn" onclick="toggleDropdown(event, ${index})">⋮</button>
-            <div class="dropdown-content" id="dropdown-${index}">
-              <button onclick="editUser(${index})">Edit</button>
-              <button onclick="deleteUser(${index})">Delete</button>
-            </div>
+  tbody.innerHTML = '';
+  filteredUsers.forEach((user,index)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = columns.map(col => `<td>${user[col] || ''}</td>`).join('') + `
+      <td>
+        <div class="dropdown">
+          <button class="action-btn" onclick="toggleDropdown(event, ${index})">⋮</button>
+          <div class="dropdown-content" id="dropdown-${index}">
+            <button onclick="openEditModal(${index})">Edit</button>
+            <button onclick="deleteUser(${index})">Delete</button>
           </div>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleDropdown(e,index){
+  e.stopPropagation();
+  closeAllDropdowns();
+  document.getElementById(`dropdown-${index}`).classList.toggle('show');
+}
+
+function closeAllDropdowns(){
+  document.querySelectorAll('.dropdown-content').forEach(dd=>dd.classList.remove('show'));
+}
+
+window.onclick = () => closeAllDropdowns();
+
+function searchUsers() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  filteredUsers = users.filter(u => (u['User Name'] || '').toLowerCase().includes(query));
+  renderTable();
+}
+
+function goBack() { window.location.href='dashboard.html'; }
+
+async function deleteUser(index){
+  const user = filteredUsers[index];
+  if(confirm(`Are you sure you want to delete ${user['User Name']}?`)){
+    const { error } = await supabase.from('"Login Credientials"').delete().eq('id', user.id);
+    if(error){ alert('Delete failed'); console.error(error); return; }
+    alert('User deleted successfully!');
+    await loadUsers();
   }
+}
 
-  function toggleDropdown(e, index) {
-    e.stopPropagation();
-    closeAllDropdowns();
-    document.getElementById(`dropdown-${index}`).classList.toggle('show');
-  }
+// Edit Modal
+const modal = document.getElementById('editModal');
+const form = document.getElementById('editForm');
+const usernameInput = document.getElementById('username');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const teamInput = document.getElementById('team');
+const roleSelect = document.getElementById('role');
+const warehousesSelect = document.getElementById('warehouses');
 
-  function closeAllDropdowns() {
-    document.querySelectorAll('.dropdown-content').forEach(dd => dd.classList.remove('show'));
-  }
+function openEditModal(index){
+  const user = filteredUsers[index];
+  editingUserId = user.id;
+  usernameInput.value = user['User Name'] || '';
+  emailInput.value = user['Email Id'] || '';
+  passwordInput.value = user['Password'] || '';
+  teamInput.value = user['Team'] || '';
+  roleSelect.value = user['Role'] || '';
+  const wh = user['Warehouse Access'] ? user['Warehouse Access'].split(',') : [];
+  for(let option of warehousesSelect.options){ option.selected = wh.includes(option.value); }
+  modal.style.display = 'flex';
+}
 
-  window.onclick = function() { closeAllDropdowns(); }
+function closeModal(){
+  modal.style.display = 'none';
+}
 
-  function editUser(index){
-    const user = filteredUsers[index];
-    window.location.href = `edit-user.html?id=${user.id}`;
-  }
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const updatedData = {
+    'User Name': usernameInput.value,
+    'Email Id': emailInput.value,
+    'Password': passwordInput.value,
+    'Team': teamInput.value,
+    'Role': roleSelect.value,
+    'Warehouse Access': Array.from(warehousesSelect.selectedOptions).map(o=>o.value).join(',')
+  };
+  const { error } = await supabase.from('"Login Credientials"').update(updatedData).eq('id', editingUserId);
+  if(error){ alert('Update failed'); console.error(error); return; }
+  alert('✅ User updated successfully!');
+  closeModal();
+  await loadUsers();
+});
 
-  async function deleteUser(index){
-    const user = filteredUsers[index];
-    if(confirm(`Are you sure you want to delete ${user['User Name']}?`)){
-      const { error } = await supabase.from('"Login Credientials"').delete().eq('id', user.id);
-      if(error){ alert('Delete failed'); console.error(error); return; }
-      alert('User deleted successfully!');
-      await loadUsers();
-    }
-  }
-
-  function searchUsers() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
-    filteredUsers = users.filter(u => (u['User Name'] || '').toLowerCase().includes(query));
-    renderTable();
-  }
-
-  function goBack() { window.location.href='dashboard.html'; }
-
-  window.onload = loadUsers;
+window.onload = loadUsers;
 </script>
 
 </body>
