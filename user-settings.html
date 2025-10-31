@@ -4,144 +4,169 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Settings</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px; }
-    h1 { color: #1f2937; margin-bottom: 20px; }
-    .back-button { margin-bottom: 10px; padding: 8px 16px; background: #1f2937; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
-    .back-button:hover { background: #374151; }
-    .search-box { margin-bottom: 15px; padding: 6px 10px; width: 300px; border-radius: 6px; border: 1px solid #d1d5db; }
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-    th { background: #f1f5f9; }
-    .action-btn { background: none; border: none; cursor: pointer; font-size: 18px; }
-    .dropdown { position: relative; display: inline-block; }
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      background-color: #fff;
-      min-width: 120px;
-      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
-      border-radius: 6px;
-      z-index: 1000;
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
     }
-    .dropdown-content button {
+
+    h1 {
+      text-align: center;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    input[type="text"] {
       width: 100%;
-      padding: 8px 12px;
-      border: none;
-      background: none;
-      text-align: left;
-      cursor: pointer;
+      padding: 8px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
-    .dropdown-content button:hover { background-color: #f1f5f9; }
-    .show { display: block; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f1f5f9;
+    }
+
+    .action-btn {
+      cursor: pointer;
+      padding: 5px 10px;
+      margin: 0 2px;
+      border: none;
+      border-radius: 4px;
+      color: white;
+    }
+
+    .edit-btn {
+      background-color: #1f2937;
+    }
+    .edit-btn:hover {
+      background-color: #374151;
+    }
+
+    .delete-btn {
+      background-color: #e53e3e;
+    }
+    .delete-btn:hover {
+      background-color: #c53030;
+    }
+
   </style>
 </head>
 <body>
 
-<h1>User Settings</h1>
-<button class="back-button" onclick="goBack()">← Back to Dashboard</button>
+  <h1>User Settings</h1>
+  <div class="container">
+    <input type="text" id="search" placeholder="Search by username..." oninput="searchUsers()">
 
-<input type="text" id="searchInput" class="search-box" placeholder="Search by username..." onkeyup="searchUsers()">
+    <table id="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Warehouses</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Users will be loaded here -->
+      </tbody>
+    </table>
+  </div>
 
-<div class="user-settings-container">
-  <table id="users-table">
-    <thead></thead>
-    <tbody></tbody>
-  </table>
-</div>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-<script>
-  const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseUrl = 'https://japvvcwuvmstkaljcttu.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-  let users = [];
-  let filteredUsers = [];
-  let columns = [];
+    let users = [];
+    const tableBody = document.querySelector('#users-table tbody');
 
-  async function loadUsers() {
-    const { data, error } = await supabase.from('Login Credentials').select('*');
-    if (error) { alert('Error fetching users'); console.error(error); return; }
+    async function loadUsers() {
+      const { data, error } = await supabase
+        .from('logincredentials')
+        .select('*');
 
-    users = data;
-    filteredUsers = [...users];
-
-    if(users.length > 0){
-      columns = Object.keys(users[0]);
-      renderTable();
+      if (error) {
+        alert('Error loading users: ' + error.message);
+        return;
+      }
+      users = data;
+      renderTable(users);
     }
-  }
 
-  function renderTable() {
-    const thead = document.querySelector('#users-table thead');
-    const tbody = document.querySelector('#users-table tbody');
-
-    // Render headers
-    thead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '<th>Actions</th></tr>';
-
-    // Render rows
-    tbody.innerHTML = '';
-    filteredUsers.forEach((user, index)=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = columns.map(col => `<td>${user[col] || ''}</td>`).join('') + `
-        <td>
-          <div class="dropdown">
-            <button class="action-btn" onclick="toggleDropdown(event, ${index})">⋮</button>
-            <div class="dropdown-content" id="dropdown-${index}">
-              <button onclick="editUser(${index})">Edit</button>
-              <button onclick="deleteUser(${index})">Delete</button>
-              <!-- Add more options here -->
-            </div>
-          </div>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function toggleDropdown(e, index) {
-    e.stopPropagation();
-    closeAllDropdowns();
-    document.getElementById(`dropdown-${index}`).classList.toggle('show');
-  }
-
-  function closeAllDropdowns() {
-    const dropdowns = document.querySelectorAll('.dropdown-content');
-    dropdowns.forEach(dd => dd.classList.remove('show'));
-  }
-
-  window.onclick = function() {
-    closeAllDropdowns();
-  }
-
-  function editUser(index){
-    const user = filteredUsers[index];
-    const editUrl = `edit-user.html?id=${user.id}`; // redirect to edit page
-    window.location.href = editUrl;
-  }
-
-  async function deleteUser(index){
-    const user = filteredUsers[index];
-    if(confirm(`Are you sure you want to delete ${user['User Name'] || user.username}?`)){
-      const { error } = await supabase.from('Login Credentials').delete().eq('id', user.id);
-      if(error){ alert('Delete failed'); console.error(error); return; }
-      alert('User deleted successfully!');
-      await loadUsers();
+    function renderTable(usersList) {
+      tableBody.innerHTML = '';
+      usersList.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${user.id}</td>
+          <td>${user.username}</td>
+          <td>${user.email}</td>
+          <td>${user.role}</td>
+          <td>${user.warehouses ? user.warehouses.join(', ') : ''}</td>
+          <td>
+            <button class="action-btn edit-btn" onclick="editUser(${user.id})">Edit</button>
+            <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
     }
-  }
 
-  function searchUsers() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
-    filteredUsers = users.filter(u => (u['User Name'] || u.username || '').toLowerCase().includes(query));
-    renderTable();
-  }
+    function searchUsers() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const filtered = users.filter(u => u.username.toLowerCase().includes(query));
+      renderTable(filtered);
+    }
 
-  function goBack() { window.location.href='dashboard.html'; }
+    function editUser(id) {
+      window.location.href = `edit-user.html?id=${id}`;
+    }
 
-  window.onload = loadUsers;
-</script>
+    async function deleteUser(id) {
+      if (!confirm('Are you sure you want to delete this user?')) return;
+
+      const { error } = await supabase
+        .from('logincredentials')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Error deleting user: ' + error.message);
+      } else {
+        alert('✅ User deleted successfully!');
+        loadUsers();
+      }
+    }
+
+    loadUsers();
+  </script>
 
 </body>
 </html>
-
