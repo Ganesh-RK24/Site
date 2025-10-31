@@ -40,7 +40,7 @@
 <body>
 
 <h1>User Settings</h1>
-<button class="back-button" onclick="goBack()">← Back to Dashboard</button>
+<button class="back-button" onclick="goBack()">← Back to Homepage</button>
 
 <input type="text" id="searchInput" class="search-box" placeholder="Search by username..." onkeyup="searchUsers()">
 
@@ -52,29 +52,26 @@
 </div>
 
 <script>
+  // ✅ Supabase connection
   const SUPABASE_URL = 'https://japvvcwuvmstkaljcttu.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let users = [];
   let filteredUsers = [];
-  let columns = [];
+  const columns = ["id","User Name","Email Id","Password","Team","Role","Warehouse Access"];
 
   async function loadUsers() {
-    const { data, error } = await supabase.from('"Login Credentials"').select('*');
-    if (error) { 
-      alert('Error fetching users'); 
-      console.error(error); 
-      return; 
+    const { data, error } = await supabase.from('"Login Credientials"').select('*');
+    if (error) {
+      alert('Error fetching users. Check console.');
+      console.error(error);
+      return;
     }
 
     users = data;
     filteredUsers = [...users];
-
-    if(users.length > 0){
-      columns = Object.keys(users[0]);
-      renderTable();
-    }
+    renderTable();
   }
 
   function renderTable() {
@@ -86,7 +83,7 @@
 
     // Render rows
     tbody.innerHTML = '';
-    filteredUsers.forEach((user, index)=>{
+    filteredUsers.forEach((user, index) => {
       const tr = document.createElement('tr');
       tr.innerHTML = columns.map(col => `<td>${user[col] || ''}</td>`).join('') + `
         <td>
@@ -110,29 +107,21 @@
   }
 
   function closeAllDropdowns() {
-    const dropdowns = document.querySelectorAll('.dropdown-content');
-    dropdowns.forEach(dd => dd.classList.remove('show'));
+    document.querySelectorAll('.dropdown-content').forEach(dd => dd.classList.remove('show'));
   }
 
-  window.onclick = function() {
-    closeAllDropdowns();
-  }
+  window.onclick = function() { closeAllDropdowns(); }
 
   function editUser(index){
     const user = filteredUsers[index];
-    const editUrl = `edit-user.html?id=${user.id}`; // redirect to edit page
-    window.location.href = editUrl;
+    window.location.href = `edit-user.html?id=${user.id}`;
   }
 
   async function deleteUser(index){
     const user = filteredUsers[index];
-    if(confirm(`Are you sure you want to delete ${user['User Name'] || user.username}?`)){
-      const { error } = await supabase.from('"Login Credentials"').delete().eq('id', user.id);
-      if(error){ 
-        alert('Delete failed'); 
-        console.error(error); 
-        return; 
-      }
+    if(confirm(`Are you sure you want to delete ${user['User Name']}?`)){
+      const { error } = await supabase.from('"Login Credientials"').delete().eq('id', user.id);
+      if(error){ alert('Delete failed'); console.error(error); return; }
       alert('User deleted successfully!');
       await loadUsers();
     }
@@ -140,7 +129,7 @@
 
   function searchUsers() {
     const query = document.getElementById('searchInput').value.toLowerCase();
-    filteredUsers = users.filter(u => (u['User Name'] || u.username || '').toLowerCase().includes(query));
+    filteredUsers = users.filter(u => (u['User Name'] || '').toLowerCase().includes(query));
     renderTable();
   }
 
@@ -151,4 +140,3 @@
 
 </body>
 </html>
-
