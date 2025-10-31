@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit User</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #1f2937;
+      text-align: center;
+    }
+
+    .edit-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 800px;
+      margin: 20px auto;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #374151;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    select[multiple] {
+      height: 100px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #1f2937;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #374151;
+    }
+
+    .back-btn {
+      background-color: #6b7280;
+      margin-right: 10px;
+    }
+    .back-btn:hover {
+      background-color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+
+<div class="edit-container">
+  <h1>Edit User</h1>
+
+  <div id="form-container">
+    <!-- Form populated via JS -->
+  </div>
+
+  <button class="back-btn" onclick="goBack()">Back</button>
+  <button onclick="saveUser()">Save</button>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabaseUrl = 'https://japvvcwuvmstkaljcttu.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcHZ2Y3d1dm1zdGthbGpjdHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzA4ODAsImV4cCI6MjA3NTQwNjg4MH0.1wAmrpCxGnCBgV2hOQEn5X7zRsKtbyRaTTqlvuojVYY';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const defaultWarehouses = ["W501", "W503", "W504", "W506", "W509", "W511", "W512"];
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const userId = urlParams.get('id');
+
+  const formContainer = document.getElementById('form-container');
+  let userData = {};
+
+  async function loadUser() {
+    if (!userId) {
+      alert('No user selected.');
+      window.location.href = 'user-settings.html';
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('logincredentials')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      alert('Error fetching user: ' + error.message);
+      return;
+    }
+
+    userData = data;
+    renderForm();
+  }
+
+  function renderForm() {
+    let html = '';
+    for (const [key, value] of Object.entries(userData)) {
+      if (key === 'warehouses') {
+        html += `<label>${key}</label>
+                 <select multiple id="warehouses">` +
+                 defaultWarehouses.map(w => `<option value="${w}" ${value && value.includes(w) ? 'selected' : ''}>${w}</option>`).join('') +
+                 `</select>`;
+      } else {
+        html += `<label>${key}</label>
+                 <input type="text" id="${key}" value="${value || ''}">`;
+      }
+    }
+    formContainer.innerHTML = html;
+  }
+
+  async function saveUser() {
+    const updatedData = {};
+    for (const key of Object.keys(userData)) {
+      if (key === 'warehouses') {
+        const selected = Array.from(document.getElementById('warehouses').selectedOptions).map(o => o.value);
+        updatedData[key] = selected;
+      } else {
+        updatedData[key] = document.getElementById(key).value;
+      }
+    }
+
+    const { error } = await supabase
+      .from('logincredentials')
+      .update(updatedData)
+      .eq('id', userId);
+
+    if (error) {
+      alert('Error updating user: ' + error.message);
+    } else {
+      alert('✅ User updated successfully!');
+      window.location.href = 'user-settings.html';
+    }
+  }
+
+  function goBack() {
+    window.location.href = 'user-settings.html';
+  }
+
+  loadUser();
+</script>
+
+</body>
+</html>
